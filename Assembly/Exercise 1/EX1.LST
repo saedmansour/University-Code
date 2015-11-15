@@ -1,0 +1,47 @@
+Technion Computer Science Department -- PDP/11 X-Assembler Version (2.2) AA.
+
+
+	S O U R C E    F I L E    :    ex1.s11
+	======================================
+
+000000                             1     . = torg + 1000
+001000                             2     main:
+001000   016700 000774             3     mov lngth, r0 ;Initialize registers
+001004   012701 003500             4     mov #arr1, r1
+001010   012702 004000             5     mov #arr2, r2
+001014   012703 004500             6     mov #sum, r3
+001020   012704 005000             7     mov #diff, r4
+001024                             8     loop:
+001024   011113                    9     mov (r1), (r3) ;Read element from arr1
+001026   061223                   10     add (r2), (r3)+ ;Read element from arr2 and compute result into sum
+001030   012114                   11     mov (r1)+, (r4) ;Read element from arr1
+001032   162224                   12     sub (r2)+, (r4)+ ;Read element from arr2 and compute result into diff
+001034   077005                   13     sob r0, loop ;Go to next iteration
+001036   000000                   14     halt
+001040                            15     . = torg + 2000
+002000   000005                   16     lngth: .word 5.
+002002                            17     . = torg + 3500
+003500   000003 000005 000004     18     arr1: .word 3., 5., 4., 15., 10.
+         000017 000012                   
+003512                            19     . = torg + 4000
+004000   000002 000001 000000     20     arr2: .word 2., 1., 0., 8., 2.
+         000010 000002                   
+004012                            21     . = torg + 4500
+004500   000000 000000 000000     22     sum: .blkw 5
+004512                            23     . = torg + 5000
+005000   000000 000000 000000     24     diff: .blkw 5
+
+
+	S Y M B O L   T A B L E
+	=======================
+
+SYMBOL    VALUE   TYPE
+------    -----   ----
+main      001000  text     
+lngth     002000  text     
+arr1      003500  text     
+arr2      004000  text     
+sum       004500  text     
+diff      005000  text     
+loop      001024  text     
+

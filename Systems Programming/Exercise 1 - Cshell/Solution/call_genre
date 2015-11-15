@@ -1,0 +1,19 @@
+#! /usr/local/bin/tcsh -f
+
+
+@ n_lines = 0
+set lengh = ""
+set med = 0
+set genre = ""
+
+
+set file_name = $1
+set genre = ($<)
+set length = `echo $genre | wc -c`
+while($length != 1)
+	set lines_num = `cat $file_name | ./rm_spaces | sort -n +4 | ./new_grep_r 5 0 | ./new_grep 6 $genre | wc -l`
+	set median_val = `cat $file_name | ./rm_spaces | ./new_grep_r 5 0 | ./new_grep 6 $genre |cut -d" " -f4 | sort -n | ./median $lines_num`
+	cat $file_name | ./rm_spaces | ./new_grep  6 $genre | ./per_genre $genre $median_val
+	set genre = ($<)
+	set length = `echo $genre | wc -c`
+end

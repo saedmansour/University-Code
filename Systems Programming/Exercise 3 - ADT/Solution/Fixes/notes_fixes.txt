@@ -1,0 +1,118 @@
+----------------------------------------------------------
+Fixes:
+
+
+
+
+----------------------------------------------------------
+Not done fixes: 
+
+reviewer.h: ReviewerResult : notation wrong
+review.h: #define REVIEWS_LIST_H => #define REVIEWS_H
+mian.c => main.c
+char *type; => ReviewType (defined in moviedatabase.h)
+----------------------------------------------------------
+Considerations:
+
+reviewer.h and review.h => naming confusing
+a general header for general typdefs and macros etc => not to reappear 
+unset_as_main => unset_as_main_review or unset_main_review
+set_as_main => set_as_main_review or set_main_review
+consistency issue: const char * or const_string
+describtion => description
+get_type => get_review_type
+get_grade => get_review_grade
+review_elem free_review(review_elem* review); => void free_review(review_elem* review);
+
+
+----------------------------------------------------------
+Code Fixes:
+
+	----------------------------------------------------------
+	Repetition:
+	
+	Old code:
+		if(new_movie->name == NULL)
+		{
+			free(new_movie);
+			return NULL;
+		}
+		new_movie->genre = (char*)malloc(strlen(genre)+1);
+		if(new_movie->genre == NULL)
+		{
+			free(new_movie->name);
+			free(new_movie);
+			return NULL;
+		}
+
+	New code:
+		//the lecturer told us free returns if it is passed null but to be sure we can make a new inline function that checks if null
+		void free_movie(movie_ptr movie)
+		{
+			free(field1);
+			free(field2);
+			free(); //etc
+			free();
+			free();
+		}
+	
+		if(new_movie->name == NULL)
+		{
+			free_movie(new_movie);
+			return NULL;
+		}
+		new_movie->genre = (char*)malloc(strlen(genre)+1);
+		if(new_movie->genre == NULL)
+		{
+			free_movie(new_movie);
+			return NULL;
+		}
+		
+	Old Code:
+		void free_reviewer(reviewer_elem reviewer)
+		{
+			reviewer_ptr tmp_reviewer = (reviewer_ptr)reviewer;
+			if(tmp_reviewer == NULL)
+			{
+				return;
+			}
+			if(tmp_reviewer->name != NULL)
+			{
+				free(tmp_reviewer->name);
+			}
+			if(tmp_reviewer->type != NULL)
+			{
+				free(tmp_reviewer->type);
+			}
+			free(tmp_reviewer);
+			return;
+		}
+	New Code:
+		Don't check null for free.
+
+	
+	
+
+
+What does rec stand for?
+
+----------------------------------------------------------
+
+Done Fixes: 1:47 PM 7/30/2008
+add these lines to movie.h so I can use pointer to functions:
+typedef movie_element (*copyListElemFunc) (movie_element;);
+typedef void (*free_movie) (movie_element);
+
+typedef void (*print_movie) (FILE*, movie_element);
+
+added:
+typedef void* movie_element; (but  didn't replace movie_elem)
+
+Note done fixes:
+use movie_element instead of movie_elem (even though use ListElement) just don't use any shortcuts unless it's mentioned in code conventions
+Document reviewer.h
+
+-------------------------
+
+2:27 PM 7/31/2008
+Why review_elem* everywehre and not review_elem?

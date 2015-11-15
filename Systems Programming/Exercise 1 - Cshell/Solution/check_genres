@@ -1,0 +1,15 @@
+#! /usr/local/bin/tcsh -f
+
+set filen = $1
+set list_check = $2
+set gn = ""
+
+echo $list_check[1]
+
+foreach gn($list_check)
+	@ lines = `cat $file_name | ./new_grep 6 $gn | wc -l`
+	if($lines == 0) then
+		printf "error"
+		break
+	endif
+end

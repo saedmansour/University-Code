@@ -1,0 +1,26 @@
+#! /usr/local/bin/tcsh -f
+
+set list = $1
+@ i = 1
+set new_char = ""
+set str = ""
+
+set  flag = `echo $list | grep ":" | wc -l`
+if($flag == 0) then 
+	echo $list
+	goto finish
+endif
+		
+endif
+
+while(1)
+	set new_char = `echo $list | cut -d":" -f$i` 	
+	if($new_char == "") break
+	set str = "${str}${new_char}\n"
+	@ i++	
+end
+
+printf $str | sort -d | ./rm_lines    
+
+
+finish:

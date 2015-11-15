@@ -1,0 +1,53 @@
+#! /bin/tcsh -f
+
+echo "\e[1m \e[34m Downloading all test files, This should take a few seconds... \e[0m"
+rm -f MTM4.tar.gz
+(wget "http://t2.technion.ac.il/~sgshaked/MTM4.tar.gz" > /dev/null) >& /dev/null
+tar -xzf MTM4.tar.gz
+
+
+echo "\e[1m \e[34m OK, Lets run the tests... \e[0m"
+set msg = ("First official test" "Second official test" "Third official test" "Zeev & Yavgeny's test" "List Test" "Dumb proof?")
+@ i = 1
+while ( $i < 6 ) 
+	cp TEST/TEST$i.cpp ./
+	g++ --ansi -pedantic-errors -Wall *.cpp -o mtm_entertainment
+	rm ./TEST$i.cpp
+	./mtm_entertainment > ! TEST/YOUR{$i}.OUT
+	echo "Test #$i (\e[36m$msg[$i]\e[0m)"
+	printf '  Output - '
+	if (`diff TEST/YOUR{$i}.OUT TEST/EXPOUT{$i} | wc -c` == 0) then
+		echo "\e[32m PASSED \e[0m"
+	else
+		echo "\e[5;31m FAIL! \e[0m"
+	endif
+	printf "  Memory Leaks - "	
+	( valgrind ./mtm_entertainment > ! /dev/null ) > & ! TEST/VG
+	if (`tail -1 TEST/VG | cut -c 10-` == "All heap blocks were freed -- no leaks are possible.") then
+		echo "\e[32m NO LEAKS :) \e[0m"
+	else 
+		echo "\e[5;31m LEAK! :( \e[0m"
+	endif	
+	@ i++
+end
+
+echo "Test #$i (\e[36m$msg[$i]\e[0m)"
+cp TEST/TEST6.cpp ./
+rm -f TEST/BAD
+rm -f TEST/YOUR6.OUT
+(g++ --ansi -pedantic-errors -Wall *.cpp -o TEST/BAD ) >& /dev/null 
+rm TEST6.cpp
+(TEST/BAD >! TEST/YOUR6.OUT )>& /dev/null
+if (`file TEST/BAD` == "TEST/BAD: cannot open (TEST/BAD)") then
+	echo "\e[32m Good - you don't let a dumb programmer copy the list!\e[0m"
+else
+if (`diff TEST/YOUR6.OUT TEST/EXPOUT6 | wc -c` == 0) then
+	echo "\e[32m Good - you have a decent copy Ctor for your list!\e[0m"
+else
+	echo "\e[5;31m Bad :(. you list is not dumb proof (but you can also blaim the lack of copy Ctor for MDB) \e[0m"
+endif
+endif
+
+
+echo '\e[1m \e[34m If everything looks green and no there is no "\e[0m diff error\e[1m \e[34m" or "\e[0m segmentation fault\e[1m \e[34m" or anything - you have passed the test. If not, check the TEST directory, TEST\e[0m?\e[1m\e[34m.cpp for the main file which made you fail and compare YOUR?.OUT with EXPOUT? for outputs. If you have memory leaks use valgrind to check your program.'
+echo 'If you still fail, and think you are right and I am wrong please let me know at \e[35mshaked.gai@gmail.com\e[34m .\e[0m'; 

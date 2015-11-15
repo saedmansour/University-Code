@@ -1,0 +1,34 @@
+#! /usr/local/bin/tcsh -f
+
+#<initialization>
+@ unsold_movies = 0 
+@ total_movies = 0
+@ total_reviews = 0
+@ median = $2
+@ initialized = 0
+@ max_rating = 0
+@ min_rating = -1
+set genre = $1
+#</initialization>
+
+#<line analyze>
+
+set line = ($<)
+while(${#line} != 0)
+  	if($initialized == 0 && $line[5] != 0) then
+		#echo "$line[5]"
+		@ initialized = 1
+		@ min_rating = $line[4]
+	endif
+	@ total_movies++
+	@ total_reviews += $line[5]
+    	if($line[4] < $min_rating && $line[5] != 0) @ min_rating = $line[4]
+    	if($line[4] > $max_rating && $line[5] != 0) @ max_rating = $line[4]            
+    	if($line[5] == 0) @ unsold_movies ++
+    	set line = ($<)
+end
+#</line analyze>
+
+#<output>
+echo $genre $total_movies $unsold_movies $min_rating $max_rating $total_reviews $median
+#</output>

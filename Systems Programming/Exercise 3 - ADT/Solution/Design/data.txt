@@ -1,0 +1,24 @@
+
+- Movies: 
+	implementation: linked list
+	reason: sorted - movie and movie year
+
+- Reviewers:
+	Users:
+		implementation: linked list
+		reason: report recent users
+	Critics:
+		implementation: linked list
+		reason: report recent critics
+
+
+- Users list for specific movie
+	implementation: linked list
+	reason: sorted - grade and user name
+
+
+- Removing a reviewer, all his reviews must be removed:
+	Set a reviews linked list for reviewer.
+
+- Adding a reviewer
+	Reviewer linked list

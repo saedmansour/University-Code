@@ -1,0 +1,27 @@
+#! /usr/local/bin/tcsh -f
+
+set movies_file = $1
+set param = $2
+
+if(!(-f $movies_file)) then
+	echo "Error: movies file does not exist"
+	goto endprog
+endif
+
+switch($param)
+	case "-all":
+		./print_genres $movies_file all
+		breaksw
+	case "-per-genre":
+		./print_genres $movies_file per-genre
+		breaksw
+	case "-genre":
+                set genre_type = $3
+		 ./print_genres $movies_file $genre_type
+		breaksw
+	case "-years":
+		./print_by_years $movies_file
+		breaksw
+endsw
+
+endprog:

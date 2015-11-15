@@ -1,0 +1,972 @@
+
+
+ORG 100H
+
+
+CALL MAIN_PROG
+
+
+INTRO: DB 'Welcome!'
+
+M1: DB 'Sensors!'
+M2: DB 'Time!'
+M3: DB 'Temp!'
+M4: DB 'Number!'
+M5: DB 'Run!'
+M6: DB 'Read!'
+
+F1: DB '  !'
+
+
+DEV_ADD: DW ?
+WR_ADD: DW ?
+RD_ADD: DW ?
+DATAA: DW ?
+EPR_ADD: DW ?
+M1_NUM: DW ?
+M2_NUM: DW ?
+M3_NUM: DW ?
+M4_NUM: DW ?
+MOD_VAL: DW ?
+KEY_VAL: DW ?
+VAL    : DW ?
+OK_VAL : DW ?
+MAX_VAL: DW ?
+NUM    : DW ?
+SEN_VAL: DW ?
+TIME_VAL : DW ?
+TMP_VAL : DW ?
+NUM_VAL : DW ?
+ONES : DW ?	;mnzelat l a7ad
+TENS : DW ?	;3shrat
+HUNS : DW ?	;me2at
+CHANNEL : DW ?
+RM_VAL: DW ?
+PIZPIZ: DW ?
+CRAP: DW ?
+SENSORS: DW ?
+TIME: DW ?
+TEMP: DW ?
+GROUPS: DW ?
+
+
+
+
+LOWC_OUT EQU 90H
+LOWC_IN  EQU 91H
+PORTC    EQU 16H
+PORTA    EQU 14H
+ADCH	 EQU 0013H
+ADCL	 EQU 0012H
+
+OK       EQU 0BH
+UP       EQU 0DH
+DOWN     EQU 07H
+MENU     EQU 0EH
+DEL      EQU 05H
+
+MEMORYW  EQU 0A0		;WRITE
+MEMORYR  EQU 0A1		;READ
+MEMORY2  EQU 0AE		;WRITE
+
+
+
+MAIN_PROG: 
+
+;Initalize values
+
+
+MOV WORD PTR DS:[MOD_VAL],1H
+MOV WORD PTR DS:[SEN_VAL],1H
+MOV WORD PTR DS:[TIME_VAL],1H
+MOV WORD PTR DS:[TMP_VAL],1H
+MOV WORD PTR DS:[NUM_VAL],1H
+MOV WORD PTR DS:[RM_VAL],1H
+
+CALL I2C
+MOV SI,INTRO
+CALL PRINT_TXT
+CALL SWITCH
+          MOV AL,MENU
+          CMP [KEY_VAL],AL
+          JNZ KEY_AGAIN
+
+KEY_AGAIN:CALL SWITCH ; UP+DOWN CLICKED TOGETHER
+          CMP WORD PTR DS : [KEY_VAL],DEL
+          JNZ NO_DEL
+          CALL LCD_CLEAR
+          MOV WORD PTR [DEV_ADD],0A0H
+          MOV WORD PTR [WR_ADD],0H
+          MOV WORD PTR [DATAA],0H
+          CALL I2C_WRITE 
+
+          MOV WORD PTR [DEV_ADD],0A0H
+          MOV WORD PTR [WR_ADD],1H
+          MOV WORD PTR [DATAA],3H
+          CALL I2C_WRITE
+ 
+          MOV WORD PTR [DEV_ADD],0A0H
+          MOV WORD PTR [WR_ADD],2H
+          MOV WORD PTR [DATAA],0H
+          CALL I2C_WRITE
+
+  	  MOV WORD PTR [DEV_ADD],0A0H
+          MOV WORD PTR [WR_ADD],3H
+          MOV WORD PTR [DATAA],0H
+          CALL I2C_WRITE
+
+          CALL DELAY3
+          CALL DELAY3
+          CALL DELAY3
+          CALL DELAY3
+          MOV SI,INTRO
+          CALL PRINT_TXT
+NO_DEL:
+         CMP WORD PTR DS : [KEY_VAL],MENU
+         JNZ KEY_AGAIN
+  
+CH_AGAIN:
+   	  CALL CHG_MODE
+
+         JMP CH_AGAIN
+
+        END
+
+
+
+
+
+I2C:
+        MOV AL,LOWC_OUT
+        CALL INT8255		;Low c output
+        CALL I2C_STOP		;Stop condition
+	MOV AL,00
+	CALL OUT_C		;
+	CALL DELAY3
+	CALL LCD_INT
+	CALL LCD_CLEAR
+RET
+
+
+PRINT_TXT:
+      CALL LCD_CLEAR
+      CALL WR_TXT
+      CALL LCD_DT
+RET
+
+
+SPACE:
+	CALL LCD_CLEAR
+	MOV SI,F1
+      	CALL WR_NUM
+      	CALL LCD_DT
+RET
+
+
+
+
+
+
+
+I2C_STOP:
+	MOV AL,LOWC_OUT
+	CALL INT8255
+	MOV DX,PORTC
+
+        CALL CLK0
+
+	MOV AL,00H
+        OUT DX,AL
+        CALL CLK1
+        MOV AL,18H
+        OUT DX,AL
+RET
+
+
+LCD_INT:
+	MOV WORD PTR [DEV_ADD],40H		; Device address of lcd
+	MOV WORD PTR [DATAA],03H		; Initalize value
+	CALL LCD_WRITE
+	CALL LCD_EN				;Enable
+	call delay2
+	CALL LCD_EN
+	call delay2
+	CALL LCD_EN
+	call delay2
+
+	MOV word ptr [DATAA],02H	;4BIT MODUS
+	CALL LCD_WRITE
+	CALL LCD_EN
+	CALL DELAY2
+       MOV word ptr [DATAA],28H
+	CALL LCD_CMD
+      ; MOV word ptr [DATAA],0EH	;DESPLAY ON
+	;CALL LCD_CMD
+       MOV word ptr [DATAA],0dH	;DESPLAY ON
+	CALL LCD_CMD
+
+	;MOV word ptr [DATAA],6H
+	;CALL LCD_CMD
+RET
+
+
+
+wr_txt:
+	CALL LCD_CLEAR
+	MOV word ptr [DEV_ADD],40H
+WR_TX:	MOV AL,[SI]
+	CMP AL,'!'
+	JZ END_TXT
+	MOV [DATAA],AL
+	CALL LCD_DT
+	INC SI
+	JMP WR_TX
+END_TXT: RET
+
+WR_LINE2:                          
+        MOV word ptr [DATAA],0C6H	; 1 in some bit to write in line 2
+	CALL LCD_CMD
+RET
+
+
+
+
+; To divide the number into its mnazel and send it
+
+
+
+
+CAL_NUM:				;This program divides the number into mnazel
+
+MOV WORD PTR DS:[ONES],0H		;Initialize the value of the ones (cuz it contains no value)
+MOV WORD PTR DS:[TENS],0H
+MOV WORD PTR DS:[HUNS],0H
+	
+ZERO_NY:INC WORD PTR DS:[ONES]
+	CMP WORD PTR DS:[ONES],0AH	; To make the mnzele 0 and increase the next mnzele in 1
+	JNZ NO_MAX			; If it doesn't pass the maximum mnzele (9)
+	INC WORD PTR DS:[TENS]
+	MOV WORD PTR DS:[ONES],0H
+	CMP WORD PTR DS:[TENS],0AH
+	JNZ NO_MAX
+	INC WORD PTR DS:[HUNS]
+	MOV WORD PTR DS:[TENS],0H
+NO_MAX:DEC WORD PTR DS:[NUM]	; It will count untill it reaches the number value then returns.
+	JNZ ZERO_NY			; ZERO NOT YET  
+	RET
+
+
+
+
+
+WR_NUM:
+	CALL WR_LINE2
+	MOV word ptr [DEV_ADD],40H
+        MOV AH,0
+	MOV [DATAA],AH
+	CALL LCD_DT
+        CALL CAL_NUM
+	
+	ADD WORD PTR DS: [ONES],48
+	ADD WORD PTR DS: [TENS],48
+	ADD WORD PTR DS: [HUNS],48
+	
+	MOV AH,[HUNS]
+	MOV [DATAA],AH
+	CALL LCD_DT
+	MOV AH,[TENS]
+	MOV [DATAA],AH
+	CALL LCD_DT
+	MOV AH,[ONES]
+	MOV [DATAA],AH
+	CALL LCD_DT
+RET
+
+
+
+LCD_CLEAR:
+	MOV word ptr [DEV_ADD],40H
+	MOV word ptr [DATAA],01H
+	CALL LCD_CMD
+RET
+
+
+;To Enable LCD to write
+
+
+LCD_WRITE:
+        CALL I2C_START
+        MOV AL,[DEV_ADD]
+        AND AL,0FEH     ; WRITE
+        CALL SEND_DATA
+        CALL I2C_ACK
+        MOV AL,[DATAA]
+        CALL SEND_DATA
+        CALL I2C_ACK
+        CALL I2C_STOP
+        ;CALL DELY2
+RET
+
+;To enable lcd
+
+LCD_EN:
+	OR WORD PTR DS:[DATAA],80H	;EN=1
+	OR AH,80H
+        CALL LCD_WRITE
+	AND WORD PTR DS:[DATAA],7FH ;EN=0
+        CALL LCD_WRITE
+RET
+
+
+
+
+HIGHT_BYTE:
+	MOV CL,4		;SHEFT RIGHT 4
+	MOV AH,[DATAA]
+	SHR WORD PTR DS:[DATAA],CL
+RET
+
+
+
+
+LOW_BYTE:
+	AND WORD PTR DS:[DATAA],0FH
+RET
+
+
+
+
+LCD_CMD:
+	CALL HIGHT_BYTE
+	CALL LCD_WRITE
+	call lcd_en
+	MOV [DATAA],AH
+	CALL LOW_BYTE
+	CALL LCD_WRITE
+	call lcd_en
+	CALL DELAY1
+RET
+
+
+
+LCD_DT:
+	CALL HIGHT_BYTE
+	OR WORD PTR DS:[DATAA],10H	;RS=1
+	CALL LCD_WRITE
+	call lcd_en
+	MOV [DATAA],AH
+	CALL LOW_BYTE
+	OR WORD PTR DS:[DATAA],10H	;RS=1
+	CALL LCD_WRITE
+	CALL LCD_EN
+	CALL DELAY2
+RET
+
+
+INT8255:
+        MOV DX,17H
+        OUT DX,AL
+        MOV DX,1BH
+        MOV AL,36H
+        OUT DX,AL
+        MOV DX,18H
+        MOV AL,50H
+	OUT DX,AL
+	MOV AL,0
+	OUT DX,AL
+        MOV DX,PORTC
+        RET
+
+;Out to port C
+
+OUT_C:
+        MOV DX,PORTC
+        OUT DX,AL
+	CALL DELAY1
+RET
+
+I2C_START:
+        MOV AL,08H   ;scl=0 sda=1
+        CALL OUT_C
+        MOV AL,18H   ;
+        CALL OUT_C
+
+        MOV AL,10H
+        CALL OUT_C
+        CALL CLK0
+        RET
+
+;Scl 1
+
+CLK1:
+        OR AL,10H
+        OUT DX,AL
+        CALL DELAY1
+        RET
+
+;Scl 0
+
+clk0:   MOV AL,00H
+        OUT DX,AL
+       CALL DELAY1
+        RET
+
+;Send data bit by bit
+
+SEND_DATA:
+        MOV BH,08H
+        MOV BL,AL
+AGAIN1:
+        SHL BL,1
+        JC DATA1
+        MOV AL,00H
+        JMP OUT1
+DATA1:
+        MOV AL,08H
+OUT1:
+        OUT DX,AL
+        call delay1
+        CALL CLK1
+        CALL CLK0
+        DEC BH
+        JNZ AGAIN1
+RET
+
+
+;Acknowledge
+
+
+I2C_ACK:
+        MOV AL,08H
+        CALL OUT_C
+        MOV AL,LOWC_IN
+        CALL INT8255
+        CALL CLK1
+
+        IN AL,DX
+        CALL CLK0
+        MOV AL,LOWC_OUT
+        CALL INT8255
+        RET
+
+
+I2C_WRITE:
+        CALL I2C_START
+        MOV AL,[DEV_ADD]
+        AND AL,0FEH     ; WRITE
+        CALL SEND_DATA
+        CALL I2C_ACK
+
+        MOV AL,[WR_ADD]
+        CALL SEND_DATA
+        CALL I2C_ACK
+
+        MOV AL,[DATAA]
+        CALL SEND_DATA
+        CALL I2C_ACK
+
+        CALL I2C_STOP
+        CALL DELAY2
+RET
+
+
+
+I2C_READ:
+        CALL I2C_START
+
+        MOV AL,[DEV_ADD]
+        AND AL,0FEH
+        CALL SEND_DATA
+        CALL I2C_ACK
+        MOV AL,[RD_ADD]
+        CALL SEND_DATA
+        CALL I2C_ACK
+
+        CALL I2C_START
+        MOV AL,[DEV_ADD]
+        OR AL,01H   ;READ
+        CALL SEND_DATA
+        CALL I2C_ACK
+        MOV AL,08H ;SDA=1
+        CALL OUT_C
+        MOV AL,LOWC_IN
+        CAll INT8255
+        MOV BH,08H
+        MOV BL,80H
+        MOV AH,00H
+
+AGAIN3:
+        CALL CLK1
+        IN AL,DX
+        AND AL,08H
+
+        JZ IN_0
+        OR AH,BL
+IN_0:   CALL CLK0
+	 SHR BL,1
+        DEC BH
+        JNZ AGAIN3
+
+        CALL I2C_STOP
+	 MOV AL,AH
+RET
+
+
+DELAY1: MOV CL,20H
+AGAIN4: DEC CL
+        JNZ AGAIN4
+        RET
+
+DELAY2: MOV CL,0FFH
+AGAIN5: DEC CL
+        JNZ AGAIN5
+        RET
+
+
+DELAy3: mov cx,0FFFH
+again6: dec cx
+jnz again6
+ret
+
+
+DELAY4: MOV CX, 0FFFFH
+AGAINPIZ: DEC CX
+JNZ AGAINPIZ
+RET
+
+MINDELAY:	MOV BL,[TIME_VAL]
+LMAO:	
+
+ 	   MOV AL, 9H   	;CHANGE TO 3CH
+ROFL:	   CALL DELAY4
+	   DEC AL
+          JNZ ROFL
+	
+	;DEC WORD PTR DS: [TIME_VAL]
+
+	DEC BL
+	JNZ LMAO
+RET
+
+SWITCH:    
+
+          MOV DX,PORTA
+          IN AL,DX
+          AND AL,0FH
+          CMP AL,0FH
+          JZ SWITCH
+          MOV BL,AL
+          CALL DELAY1
+          IN AL,DX
+          AND AL,0FH
+          CMP AL,BL
+          JNZ SWITCH
+	  MOV [KEY_VAL],AL
+CALL DELAY3
+ RET
+
+
+
+
+;Check of ok is clicked
+
+OK_CHK:
+      MOV WORD PTR DS:[OK_VAL],0H
+      CMP WORD PTR DS:[KEY_VAL],OK
+      JNZ SOF_OK
+      MOV WORD PTR DS:[OK_VAL],1H
+SOF_OK: RET
+
+
+
+
+
+;Modes
+
+
+SENSORS_M:	  
+         MOV WORD PTR DS: [MAX_VAL],9
+
+CHG_SENS: MOV AL,[SEN_VAL]
+
+         MOV  [VAL],AL
+         MOV [NUM],AL
+         CALL WR_NUM	  
+
+	  CALL SWITCH
+         CALL UP_CHK
+         MOV AL, [VAL]
+         MOV [SEN_VAL],AL
+
+         ;CALL OK_CHK
+        CMP WORD PTR DS:[KEY_VAL],OK
+         JNZ CHG_SENS
+RET
+			
+
+
+TIME_M:  
+	  MOV WORD PTR DS: [MAX_VAL],101
+
+CHG_TIME:MOV AL,[TIME_VAL]
+
+         MOV  [VAL],AL
+         MOV [NUM],AL
+         CALL WR_NUM	  
+
+	  CALL SWITCH
+         CALL UP_CHK
+         MOV AL, [VAL]
+         MOV [TIME_VAL],AL
+
+        ; CALL OK_CHK
+         CMP WORD PTR DS:[KEY_VAL],OK
+
+         JNZ CHG_TIME
+RET
+
+
+
+CRTMP_M: MOV WORD PTR DS: [MAX_VAL],101
+
+CHG_TMP: MOV AL,[TMP_VAL]
+
+         MOV  [VAL],AL
+         MOV [NUM],AL
+         CALL WR_NUM	  
+
+	  CALL SWITCH
+         CALL UP_CHK
+         MOV AL, [VAL]
+         MOV [TMP_VAL],AL
+
+        ; CALL OK_CHK
+         CMP WORD PTR DS:[KEY_VAL],OK
+
+         JNZ CHG_TMP
+RET
+
+
+
+MES_NUM: MOV WORD PTR DS: [MAX_VAL],9
+
+CHG_NUM: MOV AL,[NUM_VAL]
+
+         MOV  [VAL],AL
+         MOV [NUM],AL
+         CALL WR_NUM	  
+
+	  CALL SWITCH
+         CALL UP_CHK
+         MOV AL, [VAL]
+         MOV [NUM_VAL],AL
+
+   
+         CMP WORD PTR DS:[KEY_VAL],OK
+
+         JNZ CHG_NUM
+RET
+
+;A tryout read, You can delete this
+
+RUN1: 
+ 	MOV WORD PTR DS: [PIZPIZ], 3H
+ZIPZIP: MOV AL,[PIZPIZ]
+	MOV [RD_ADD],AL
+	MOV WORD PTR DS:[DEV_ADD],MEMORYR
+	CALL I2C_READ
+	MOV [NUM],AL
+	CALL WR_NUM
+	CALL MINDELAY
+	INC WORD PTR DS: [PIZPIZ]
+	CMP WORD PTR DS:[PIZPIZ],7H
+	JNZ ZIPZIP
+RET
+
+
+;Read and write to lcd process
+
+READ:
+		
+		MOV WORD PTR DS:[TIME],0H
+		MOV WORD PTR DS:[GROUPS],0H
+		MOV WORD PTR DS:[TEMP],4H
+RAJA:		CALL NASER
+		INC WORD PTR DS:[GROUPS]
+		MOV [RD_ADD],0H
+		MOV WORD PTR DS:[DEV_ADD],MEMORYR
+		CALL I2C_READ
+		CMP [GROUPS],AL
+		JNZ RAJA			;DO NEXT GROUP
+RET
+
+
+
+NASER:
+		MOV WORD PTR DS:[SENSORS],1H
+WALEED:		MOV AL,[SENSORS]
+		MOV [NUM],AL
+		CALL SPACE
+
+		MOV AL,[TEMP]
+		MOV [RD_ADD],AL
+		MOV WORD PTR DS:[DEV_ADD],MEMORYR
+		CALL I2C_READ
+		MOV [NUM],AL
+		CALL SPACE
+
+		MOV [RD_ADD],3H
+		MOV WORD PTR DS:[DEV_ADD],MEMORYR
+		CALL I2C_READ
+		ADD WORD PTR DS:[TIME],AL
+		MOV AL,[TIME]
+		MOV [NUM],AL
+		CALL WR_NUM
+
+		INC WORD PTR DS: [TEMP]
+		INC WORD PTR DS: [SENSORS]
+
+		;CHECK UP/DOWN
+		
+ONLYUP:		CALL SWITCH
+         	MOV AL,UP
+          	CMP [KEY_VAL],AL
+          	JNZ ONLYUP
+		
+		;CLEAR LINE2
+
+
+		MOV [RD_ADD],2H
+		CALL I2C_READ
+		INC AL
+		CMP WORD PTR DS:[SENSORS],AL
+		JNZ WALEED				;STILL FIRST GROUP
+RET
+
+		
+				
+		
+
+
+
+;WRITING ON MEMORY AND CONVERTING
+
+
+RUN: 		; 70 TIMES OF DELAY 4 = 60 SECONDS  
+
+		MOV BL, [SEN_VAL]
+		MOV [DATAA], BL
+		MOV WORD PTR DS: [WR_ADD], 2H ;PUT SENSOR NUMBER IN CELL 3
+	MOV WORD PTR DS:[DEV_ADD],MEMORYW
+		CALL I2C_WRITE
+ 		
+		;CHECKING IF THE NUMBER BETWEEN MEASURES IS 1 OR NOT
+
+		;CMP WORD PTR DS: [NUM_VAL], 1H
+		;JNZ PIZ
+		;MOV WORD PTR DS: [NUM_VAL], 30
+PIZ:		CALL NUMTIME
+
+		DEC WORD PTR DS: [NUM_VAL]
+		JNZ PIZ		
+
+
+RET
+	
+NUMTIME:	CALL CONVERT
+		CALL MINDELAY		
+	
+RET	
+
+
+CONVERT:	
+					;1 TIME FROM EACH SENSOR GROUP
+		MOV WORD PTR DS: [CHANNEL], 0H 
+	ADC11:	MOV DX, ADCL
+		MOV AL, [CHANNEL]
+		OUT DX, AL
+	
+		MOV AL, 0H
+		MOV DX, ADCH
+		OUT DX, AL
+		MOV DX, ADCL
+	ADC12:	IN AL, DX
+		TEST AL, 1H 
+		JZ ADC12
+		MOV DX, ADCH
+		IN AL, DX
+		NOT AL	
+		
+
+		;WRITE AFTER LAST CELL AND INCREASE CELL 2 (LAST CELL WE WROTE IN)
+
+		MOV [DATAA],AL
+		MOV WORD PTR DS:[RD_ADD],1H
+		MOV WORD PTR DS:[DEV_ADD],MEMORYR
+		CALL I2C_READ
+		INC AL
+		MOV [WR_ADD],AL
+	MOV WORD PTR DS:[DEV_ADD],MEMORYW
+		CALL I2C_WRITE
+	
+
+		;INCREASE CELL TWO
+
+		
+
+	MOV WORD PTR DS:[RD_ADD],1H
+	MOV WORD PTR DS:[DEV_ADD],MEMORYR
+	CALL I2C_READ
+	INC AL
+	MOV WORD PTR DS:[WR_ADD],1H
+	MOV [DATAA],AL
+	MOV WORD PTR DS:[DEV_ADD],MEMORYW
+	CALL I2C_WRITE
+
+	
+	
+		INC WORD PTR DS: [CHANNEL]
+		MOV BH, [SEN_VAL]
+		CMP BH, [CHANNEL]
+		JNZ ADC11
+	
+	;ADD 1 TO CELL 1
+
+	MOV WORD PTR DS:[RD_ADD],0H
+	MOV WORD PTR DS:[DEV_ADD],MEMORYR
+	CALL I2C_READ
+	INC AL
+	MOV WORD PTR DS:[WR_ADD],0H
+	MOV [DATAA],AL
+	MOV WORD PTR DS:[DEV_ADD],MEMORYW
+	CALL I2C_WRITE
+	
+
+RET
+
+
+
+MENU_OK:
+
+			CMP WORD PTR DS: [MOD_VAL], 01H
+			JNZ MODE_2
+			CALL SENSORS_M
+		
+	MODE_2:	CMP WORD PTR DS: [MOD_VAL], 02H
+			JNZ MODE_3
+			CALL TIME_M ;Time between each temp measure
+
+	MODE_3:	CMP WORD PTR DS: [MOD_VAL], 03H
+			JNZ MODE_4 
+			CALL CRTMP_M ;Critical tempreture
+
+	MODE_4:	CMP WORD PTR DS: [MOD_VAL], 04H
+			JNZ MODE_5
+			CALL MES_NUM
+	MODE_5:	CMP WORD PTR DS: [MOD_VAL], 05H
+			JNZ MODE_6
+			CALL RUN
+	MODE_6:	CMP WORD PTR DS: [MOD_VAL], 06H
+			JNZ SOF
+			CALL READ
+
+SOF:          RET
+
+
+
+CHG_MODE:
+         MOV SI,M1
+         CALL PRINT_TXT
+AGAIN_M:
+	  MOV AL,[MOD_VAL]
+         MOV  [VAL],AL
+         MOV WORD PTR DS: [MAX_VAL],07H
+
+
+CHG_MOD1:MOV WORD PTR DS: [KEY_VAL],0FH
+	  CALL SWITCH
+         CALL UP_CHK
+         MOV AL, [VAL]
+         MOV [MOD_VAL],AL
+         CMP WORD PTR DS: [MOD_VAL], 01H
+         JNZ CHG_MOD2
+         MOV SI,M1 
+; If reaches max and returns, print it always
+         JMP SOF_MOD
+
+CHG_MOD2:CMP WORD PTR DS: [MOD_VAL],02H
+         JNZ CHG_MOD3
+         MOV SI,M2
+         JMP SOF_MOD
+
+
+CHG_MOD3:CMP WORD PTR DS: [MOD_VAL],03H
+         JNZ CHG_MOD4
+         MOV SI,M3
+         JMP SOF_MOD
+
+
+CHG_MOD4:CMP WORD PTR DS: [MOD_VAL],04H
+         JNZ CHG_MOD5
+         MOV SI,M4
+         JMP SOF_MOD
+
+CHG_MOD5:CMP WORD PTR DS: [MOD_VAL],05H
+         JNZ CHG_MOD6
+         MOV SI,M5
+         JMP SOF_MOD
+
+CHG_MOD6: MOV SI,M6
+
+
+SOF_MOD: CALL PRINT_TXT
+        ; CALL OK_CHK
+         CMP WORD PTR DS:[KEY_VAL],OK
+
+         JNZ AGAIN_M
+
+	   CALL MENU_OK
+
+        ;  JMP AGAIN_M
+         RET
+
+
+
+
+
+UP_CHK:
+      CMP WORD PTR DS:[KEY_VAL],UP
+      JNZ DOWN1
+      MOV AL,[VAL]
+      ADD AL,1
+      DAA
+      MOV [VAL],AL
+      MOV AL,[MAX_VAL]
+      CMP [VAL],AL
+      JNZ SOF_UP
+      MOV WORD PTR DS:[VAL],1H
+DOWN1: CMP WORD PTR DS:[KEY_VAL],DOWN
+       JNZ SOF_UP
+       MOV AL,[VAL]
+       SUB AL,1
+       DAS
+       MOV [VAL],AL
+       CMP WORD PTR DS:[VAL],0H
+      JNZ SOF_UP
+      MOV AL,[MAX_VAL]
+      MOV [VAL],AL
+      MOV AL,[VAL]
+      SUB AL,1
+      DAS
+      MOV [VAL],AL
+
+SOF_UP:RET
+
+
+holo: ret
+
+
+
+
+
+

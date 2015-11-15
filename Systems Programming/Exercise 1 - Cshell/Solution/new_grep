@@ -1,0 +1,11 @@
+#! /usr/local/bin/tcsh -f
+
+set field_num = $1
+set word = $2
+
+set line = ($<)
+while(${#line} != 0)
+	set field  = `echo $line | cut -d" " -f${field_num}`
+	if($field == $word) echo $line
+	set line = ($<)
+end

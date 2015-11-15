@@ -1,0 +1,13 @@
+Arabic MorphTagger Tags:
+	[, , , , , , , 
+	Conjunction, preposition, particle, Determiner, interjection, adverb, , 
+	, noun, ]
+	
+	relativepronoun, Number, personalpronoun, propernoun, properName, pronoun, numeral, adjective, adjective,
+	verbimperative, verbpast, verbpresent, verbpassive, nounplural
+	
+
+Hebrew MorphTagger Tags:
+	[participle, ה, , , , interrogative, wPrefix, conjunction, , 
+	copula, existential, preposition, ומה, negation, quantifier, מה, interjection, adverb, של, 
+	verb, noun, ושב, ש, modal]

@@ -1,0 +1,25 @@
+#! /usr/local/bin/tcsh -f
+
+#<paramters>
+set year = $1
+#<input type="from stdin: all lines printed containing movies made in the same year">
+#</paramters>
+
+#<initialization>
+@ movies_num = 0
+set str = ""
+#</initialization>
+
+#<analyze type="$year details">
+set line = ($<)
+while(${#line} != 0)
+	@ movies_num ++
+	set char = `echo $line | cut -d" " -f2 | cut -c1`
+	set str = ${str}${char}
+	set line = ($<)
+end
+#</analyze>
+
+#<output>
+echo $year $movies_num $str
+#</output>

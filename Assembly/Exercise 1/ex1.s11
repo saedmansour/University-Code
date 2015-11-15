@@ -1,0 +1,24 @@
+. = torg + 1000
+main:
+mov lngth, r0 ;Initialize registers
+mov #arr1, r1
+mov #arr2, r2
+mov #sum, r3
+mov #diff, r4
+loop:
+mov (r1), (r3) ;Read element from arr1
+add (r2), (r3)+ ;Read element from arr2 and compute result into sum
+mov (r1)+, (r4) ;Read element from arr1
+sub (r2)+, (r4)+ ;Read element from arr2 and compute result into diff
+sob r0, loop ;Go to next iteration
+halt
+. = torg + 2000
+lngth: .word 5.
+. = torg + 3500
+arr1: .word 3., 5., 4., 15., 10.
+. = torg + 4000
+arr2: .word 2., 1., 0., 8., 2.
+. = torg + 4500
+sum: .blkw 5
+. = torg + 5000
+diff: .blkw 5

@@ -1,0 +1,4 @@
+package development;
+public enum Tag {
+	VERB,PRONOUN, NOUN, PUNCTATION, ADJECTIVE , NUMBER, ADVERB, HELPER_WORD,UNKNOWN
+}

@@ -1,0 +1,786 @@
+start  start  start
+dwbrt  dwbr  noun  
+$yrwt  $yrwt  noun  
+ht&swqh  t&swqh  noun  
+msrh  msr  verb  
+^tmwl  ^tmwl  adverb  
+btgwbh  tgwbh  noun  
+,  punctuation  
+ky  ky  conjunction  
+h$yrwt  $yrwt  noun  
+pw&l  p&l  participle  
+lcmcwm  cmcwm  noun  
+msprm  mspr  noun  
+$l  $l  preposition  
+h&wbdym  &wbd  noun  
+hzrym  zr  adjective  
+wlhknst  hknsh  noun  
+&wlym  &wlh  noun  
+xd$ym  xd$  adjective  
+bmqwmm  mqwm  noun  
+.  punctuation
+start start start
+hy^  hw^  pronoun  
+mbwsst  bwss  participle  
+&l  &l  preposition  
+^wtw  ^t  preposition  
+qrb  qrb  noun  
+hmgnnh  mgnnh  noun  
+$bw  b  preposition  
+^yr&w  ^yr&  verb  
+m&$y  m&$h  noun  
+gbwrh  gbwrh  noun  
+&yl^yym  &yl^y  adjective  
+,  punctuation  
+w&l  &l  preposition  
+qblt  qblh  noun  
+hxl@wt  hxl@h  noun  
+q$wt  q$h  adjective  
+btn^y  tn^y  noun  
+qrb  qrb  noun  
+.  punctuation  
+start start start
+xwsr  xwsr  noun  
+nysywn  nysywn  noun  
+w&lylh  &lylh  noun  
+zdwnyt  zdwny  adjective  
+b^ym  b^  participle  
+lby@wy  by@wy  noun  
+bq@&  q@&  noun  
+hm^mr  m^mr  noun  
+hdn  dn  participle  
+bnw$^  nw$^  noun  
+"  punctuation  
+rcx  rcx  noun  
+hnzyrwt  nzyrh  noun  
+"  punctuation  
+.  punctuation
+start start start
+^m  ^m  conjunction  
+t$m&  $m&  verb  
+yrywt  yryyh  noun  
+ttkwpp  htkwpp  verb  
+,  punctuation  
+^bl  ^bl  conjunction  
+^l  ^l  negation  
+tpxd  pxd  verb  
+"  punctuation  
+.  punctuation  
+start start start
+wlkn  lkn  conjunction  
+^ny  hw^  pronoun  
+^wmr  ^mr  participle  
+lkl  kwl  quantifier  
+yldy  yld  noun  
+y$r^l  y$r^l  properName  
+:  punctuation  
+^l  ^l  negation  
+tpxdw  pxd  verb  
+!  punctuation  
+start start start
+s&w  ns&  verb  
+lyrw$lym  yrw$lym  properName  
+,  punctuation  
+^pylw  ^pylw  conjunction  
+^m  ^m  conjunction  
+ywrym  yrh  participle  
+^w  ^w  conjunction  
+^m  ^m  conjunction  
+mt&wppym  ht&wpp  participle  
+$m  $m  adverb  
+skynym  skyn  noun  
+.  punctuation  
+start start start
+hp@y$  p@y$  noun  
+hkbd  kbd  adjective  
+$hnxyt  hnxyt  verb  
+hpw&l  pw&l  noun  
+h&rby  &rby  adjective  
+&l  &l  preposition  
+r^$yhm  r^$  noun  
+$l  $l  preposition  
+m&syqw  m&syq  noun  
+wxbrw  xbr  noun  
+,  punctuation  
+hskyn  skyn  noun  
+$ydw  yd  noun  
+$l  $l  preposition  
+^y$  ^y$  noun  
+hmrkwl  mrkwl  noun  
+tq&h  tq&  verb  
+b^xd  ^xd  numeral  
+hspqym  spq  noun  
+,  punctuation  
+wrcx  rcx  noun  
+hms&dn  ms&dn  noun  
+b&yn  b&yn  MWE  
+krm  krm  MWE  
+zh  zh  pronoun  
+l^  l^  negation  
+mkbr  mkbr  adverb  
+&l  &l  MWE  
+-  punctuation  
+ydy  ydy  MWE  
+^xd  ^xd  numeral  
+m&wbdyw  &wbd  noun  
+,  punctuation  
+^p  ^p  conjunction  
+hw^  hw^  pronoun  
+&rby  &rby  adjective  
+,  punctuation  
+m&lh  h&lh  participle  
+mnbky  nbk  noun  
+hzykrwn  zykrwn  noun  
+^t  ^t  preposition  
+hptgm  ptgm  noun  
+:  punctuation  
+"  punctuation  
+hmgdl  gydl  participle  
+nx$  nx$  noun  
+$pypwn  $pypwn  noun  
+bbytw  byt  noun  
+,  punctuation  
+^l  ^l  modal  
+ywpt&  hwpt&  verb  
+^m  ^m  conjunction  
+ymc^  mc^  verb  
+&cmw  &cmw  pronoun  
+mwk$  hwk$  participle  
+"  punctuation  
+.  punctuation  
+start start start
+"  punctuation  
+l^  l^  negation  
+np@  np@  noun  
+"  punctuation  
+,  punctuation  
+k&s  k&s  verb  
+hn$y^  n$y^  noun  
+,  punctuation  
+"  punctuation  
+mdwbr  dwbr  participle  
+ph  ph  adverb  
+btwqpnwt  twqpnwt  noun  
+glwyh  glwy  adjective  
+"  punctuation  
+.  punctuation  
+start start start
+^ywbh  ^ywbh  properName  
+hy^  hw^  copula  
+mqwm  mqwm  noun  
+l^  l^  negation  
+-  punctuation  
+$grty  $grty  adjective  
+.  punctuation  
+start start start
+bm&mqy  m&mqym  noun  
+hm&rb  m&rb  noun  
+htykwn  tykwn  adjective  
+$l  $l  preposition  
+^rh"b  ^rh  MWE  
+ql  ql  adjective  
+lh^myn  h^myn  verb  
+$h&wlm  &wlm  noun  
+nbr^  nbr^  verb  
+bclm  clm  noun  
+^mryqh  ^mryqh  properName  
+,  punctuation  
+$hw^  hw^  pronoun  
+ml^  ml^  adjective  
+^n$ym  ^y$  noun  
+hgywnyym  hgywny  adjective  
+wprgm@yym  prgm@y  adjective  
+,  punctuation  
+w$h^wtwry@h  ^w@wry@h  noun  
+hmwsryt  mwsry  adjective  
+$l  $l  preposition  
+mwsd  mwsd  noun  
+$^y$  ^y$  noun  
+,  punctuation  
+kwll  kll  participle  
+^rh"b  ^rh  MWE  
+,  punctuation  
+m&wlm  m&wlm  adverb  
+l^  l^  negation  
+lqx  lqx  verb  
+brcynwt  rcynwt  noun  
+t&$h  &$h  verb  
+rw$m  rw$m  noun  
+myydy  myydy  adjective  
+&l  &l  preposition  
+sd^m  sd^m  properName  
+xwsyyn  xwsyyn  properName  
+.  punctuation  
+start start start
+hm$br  m$br  noun  
+bmprc  bmprc  MWE  
+hprsy  prsy  adjective  
+l^  l^  negation  
+hyh  hyh  existential  
+nw$^  nw$^  noun  
+bxyrwt  bxyrwt  noun  
+mrkzy  mrkzy  adjective  
+b^ywbh  ^ywbh  properName  
+.  punctuation  
+start start start
+mzkyrwt  mzkyrwt  noun  
+^ygwd  ^ygwd  noun  
+hpw&lym  pw&l  noun  
+hxql^yym  xql^y  adjective  
+hcy&h  hcy&  verb  
+^tmwl  ^tmwl  adverb  
+$hmm$lh  mm$lh  noun  
+t$lm  $ylm  verb  
+m&nq  m&nq  noun  
+xwd$y  xwd$y  adjective  
+$l  $l  preposition  
+500  numeral  
+$"x  $"x  noun  
+,  punctuation  
+nwsp  nwsp  participle  
+l$kr  $kr  noun  
+hrgyl  rgyl  adjective  
+,  punctuation  
+lkl  kwl  quantifier  
+y$r^ly  y$r^ly  noun  
+$y&bwd  &bd  verb  
+bq@yp  q@yp  noun  
+hhdrym  hdr  noun  
+bm$k  bm$k  preposition  
+$lw$h  $lw$h  numeral  
+xwd$ym  xwd$  noun  
+lpxwt  lpxwt  adverb  
+.  punctuation  
+start start start
+mzkyr  mzkyr  noun  
+^ygwd  ^ygwd  noun  
+hpw&lym  pw&l  noun  
+hxql^yym  xql^y  adjective  
+,  punctuation  
+xyym  xyym  properName  
+^byby  ^byby  properName  
+,  punctuation  
+msr  msr  verb  
+$hhc&h  hc&h  noun  
+hw&lth  hw&lh  verb  
+lnwkx  lnwkx  preposition  
+hmxswr  mxswr  noun  
+b&wbdy  &wbd  noun  
+q@yp  q@yp  noun  
+hmwrg$  hwrg$  participle  
+kbr  kbr  adverb  
+k&t  k&t  adverb  
+wywxrp  hwxrp  verb  
+bxwd$  xwd$  noun  
+hb^  b^  adjective  
+,  punctuation  
+k$hq@yp  q@yp  noun  
+yhyh  yhyh  existential  
+b&ycwmw  &ycwm  noun  
+,  punctuation  
+b&yqr  b&yqr  adverb  
+&qb  &qb  preposition  
+hy&drwt  hy&drwt  noun  
+&wbdym  &wbd  noun  
+mh$@xym  $@x  noun  
+.  punctuation  
+start start start
+^n$y  ^y$  noun  
+m$rd  m$rd  noun  
+hxwc  xwc  noun  
+htq$rw  htq$r  verb  
+^tmwl  ^tmwl  adverb  
+lmp&l  mp&l  noun  
+,  punctuation  
+wrq  rq  conjunction  
+^z  ^z  conjunction  
+htbrr  htbrr  verb  
+ky  ky  conjunction  
+mdwbr  dwbr  participle  
+byw"r  yw"r  noun  
+r$wt  r$wt  noun  
+$dwt  $dwt  MWE  
+ht&wph  ht&wph  MWE  
+.  punctuation  
+start start start
+grwsbwrd  grwsbwrd  properName  
+,  punctuation  
+bn  bn  noun  
+95  numeral  
+bmwtw  mwwt  noun  
+,  punctuation  
+h$^yr  h$^yr  verb  
+^xryw  ^xry  preposition  
+^m  ^m  noun  
+,  punctuation  
+^xwt  ^x  noun  
+,  punctuation  
+r&yh  r&yh  noun  
+,  punctuation  
+bn  bn  noun  
+w$ty  $tyym  numeral  
+bnwt  bt  noun  
+.  punctuation  
+start start start
+^bl  ^bl  conjunction  
+kmwbn  kmwbn  adverb  
+,  punctuation  
+l^xr  l^xr  preposition  
+bdyqh  bdyqh  noun  
+qpdnyt  qpdn  adjective  
+,  punctuation  
+mtbrr  htbrr  participle  
+$zh  zh  pronoun  
+bdywq  bdywq  adverb  
+mh  mh  pronoun  
+$hm  hw^  pronoun  
+mywxdym  mywxd  adjective  
+.  punctuation  
+start start start
+qxw  lqx  verb  
+lm$l  lm$l  conjunction  
+^t  ^t  preposition  
+mryh  mryh  properName  
+w^r^lh  ^r^lh  properName  
+.  punctuation  
+start start start
+hdwgmh  dwgmh  noun  
+hydw&h  ydw&  adjective  
+bywtr  bywtr  adverb  
+l$mch  $mch  noun  
+mhtqwph  tqwph  noun  
+h^xrwnh  ^xrwn  adjective  
+hy^  hw^  copula  
+h$ymw$  $ymw$  noun  
+bkspy  ksp  noun  
+qrn  qrn  noun  
+g^n@  g^n@  properName  
+lrky$t  rky$h  noun  
+^lpy  ^lp  numeral  
+&wtqym  &wtq  noun  
+$l  $l  preposition  
+h^w@wbywgrpyh  ^w@wbywgrpyh  noun  
+$l  $l  preposition  
+yw"r  yw"r  noun  
+g^n@  g^n@  properName  
+l$&br  l$&br  adverb  
+,  punctuation  
+^l^n  ^l^n  properName  
+nwyh^r@  nwyh^r@  properName  
+.  punctuation  
+start start start
+hdbr  dbr  noun  
+syy&  syy&  verb  
+lhknys  hknys  verb  
+^t  ^t  preposition  
+hspr  spr  noun  
+lr$ymt  r$ymh  noun  
+rby  rb  adjective  
+-  punctuation  
+hmkr  mkr  noun  
+$l  $l  preposition  
+"  punctuation  
+nyw  nyw  MWE  
+ywrq  ywrq  MWE  
+@yyms  @yyms  MWE  
+"  punctuation  
+,  punctuation  
+m&md  m&md  noun  
+$bdrk  $bdrk  MWE  
+kll  kll  MWE  
+gwrr  grr  participle  
+b&qbwtyw  b&qbwt  preposition  
+mkyrt  mkyrh  noun  
+&$rwt  &$r  numeral  
+^lpy  ^lp  numeral  
+&wtqym  &wtq  noun  
+nwspym  nwsp  adjective  
+.  punctuation  
+start start start
+nysywnw  nysywn  noun  
+h^xrwn  ^xrwn  adjective  
+$l  $l  preposition  
+mylr  mylr  properName  
+lh$yg  h$yg  verb  
+kspym  ksp  noun  
+mqrn  qrn  noun  
+pwrd  pwrd  properName  
+hyh  hyh  existential  
+btxylt  txylh  noun  
+$nwt  $nh  noun  
+h  
+70  numeral  
+.  punctuation  
+start start start
+^z  ^z  adverb  
+hw^  hw^  pronoun  
+gylh  gylh  verb  
+&nyyn  &nyyn  noun  
+bgwrmym  gwrm  noun  
+hm$py&ym  h$py&  participle  
+&l  &l  preposition  
+$y&wr  $y&wr  noun  
+hmcby&ym  mcby&  noun  
+,  punctuation  
+wpqyd  pqyd  noun  
+htwknyt  twknyt  noun  
+gylh  gylh  verb  
+&nyyn  &nyyn  noun  
+b$y&wr  $y&wr  noun  
+hmcby&ym  mcby&  noun  
+hnmwk  nmwk  adjective  
+bqrb  bqrb  preposition  
+bny  bn  noun  
+my&w@ym  my&w@  noun  
+.  punctuation  
+start start start
+&rwk  &rk  verb  
+bdyqh  bdyqh  noun  
+mxwd$t  mxwd$  adjective  
+,  punctuation  
+nwqbt  nqb  participle  
+wq@lnyt  q@lny  adjective  
+,  punctuation  
+ldwgmwt  dwgmh  noun  
+lybrlywt  lybrly  adjective  
+&yypwt  &yyp  adjective  
+.  punctuation  
+start start start
+zh  zh  pronoun  
+k  
+20  numeral  
+$nh  $nh  noun  
+mt^mct  ht^mc  participle  
+xbwrt  xbwrh  noun  
+$mrnym  $mrn  noun  
+,  punctuation  
+bynyhm  byn  preposition  
+^yrwwyng  ^yrwwyng  properName  
+qrys@wl  qrys@wl  properName  
+,  punctuation  
+lh$yg  h$yg  verb  
+swbsydyh  swbsydyh  noun  
+pyln@rwpyt  pylntrwpy  adjective  
+lhwgym  hwgh  noun  
+rbym  rb  adjective  
+ywtr  ywtr  adverb  
+mhymyn  ymyn  noun  
+.  punctuation  
+start start start
+^bl  ^bl  conjunction  
+^th  hw^  pronoun  
+ykwl  ykwl  modal  
+l&yyn  &yyn  verb  
+b&$rwt  &$r  numeral  
+dpy  dp  noun  
+dw"x  dw"x  noun  
+rwqplr  rwqplr  properName  
+h$nty  $nty  adjective  
+bly  bly  preposition  
+lmcw^  mc^  verb  
+pry@  pry@  noun  
+hwc^h  hwc^h  noun  
+$ql  ql  adjective  
+kl  kl  MWE  
+kk  kk  MWE  
+ll&wg  l&g  verb  
+lw  l  preposition  
+.  punctuation  
+start start start
+^$r  ^$r  conjunction  
+lqrn  qrn  noun  
+pwrd  pwrd  properName  
+$mrnym  $mrn  noun  
+mtlwnnym  htlwnn  participle  
+$mdynywt  mdynywt  noun  
+h&dpt  h&dph  noun  
+$xwrym  $xwr  adjective  
+kqyzwz  qyzwz  noun  
+l^plyyt  ^plyh  noun  
+h&br  &br  noun  
+(  punctuation  
+&ch  &ch  noun  
+mspr  mspr  quantifier  
+7  numeral  
+,  punctuation  
+hyh  hyh  copula  
+$xwr  $xwr  adjective  
+)  punctuation  
+$hy^  hw^  pronoun  
+nwq@t  nq@  participle  
+,  punctuation  
+hy^  hw^  copula  
+$ryd  $ryd  noun  
+llybrlyzm  lybrlyzm  noun  
+qdwm  qdwm  adjective  
+.  punctuation  
+start start start
+w^yn  ^yn  existential  
+spq  spq  noun  
+$xlq  xlq  noun  
+nkbd  nkbd  adjective  
+mbyn  mbyn  preposition  
+50  numeral  
+^lp  ^lp  numeral  
+hcqym  hcqym  noun  
+$&lyhm  &l  preposition  
+xwtmt  xtm  participle  
+hqrn  qrn  noun  
+nmsr  nmsr  participle  
+lqbwcwt  qbwch  noun  
+kmw  kmw  preposition  
+"  punctuation  
+pr^pr^z  pr^pr^z  properName  
+"  punctuation  
+,  punctuation  
+kdy  kdy  conjunction  
+"  punctuation  
+l$r@@  $r@@  verb  
+^t  ^t  preposition  
+mslwl  mslwl  noun  
+hmwr$t  mwr$t  noun  
+h$xwrh  $xwr  adjective  
+b^ys@  b^ys@  MWE  
+syyd  syyd  MWE  
+htxtyt  txty  adjective  
+$l  $l  preposition  
+nyw  nyw  MWE  
+-  punctuation  
+ywrq  ywrq  MWE  
+"  punctuation  
+.  punctuation  
+start start start
+h@ypwsym  @ypws  noun  
+lwb$y  lb$  participle  
+hxlypwt  xlyph  noun  
+hkhwt  khh  adjective  
+,  punctuation  
+h$yykym  $yyk  adjective  
+lzrm  zrm  noun  
+mrkzy  mrkzy  adjective  
+ywtr  ywtr  adverb  
+,  punctuation  
+^wmrym  ^mr  participle  
+$$wm  $wm  quantifier  
+mdynh  mdynh  noun  
+^ynh  ^ynw  copula  
+ykwlh  ykwl  modal  
+lhywt  hyh  copula  
+b@wxh  b@wx  adjective  
+^m  ^m  conjunction  
+l^  l^  negation  
+yhyh  yhyh  existential  
+"  punctuation  
+mbnh  mbnh  noun  
+by@xwn  by@xwn  noun  
+^yrwpy  ^yrwpy  adjective  
+ycyb  ycyb  adjective  
+"  punctuation  
+.  punctuation  
+start start start
+wklklnym  klkln  noun  
+bxbwrt  xbwrh  noun  
+mqdmy  qydm  participle  
+hmdynywt  mdynywt  noun  
+ht&$yytyt  t&$yyty  adjective  
+,  punctuation  
+yxd  yxd  adverb  
+&m  &m  preposition  
+mxnkym  mxnk  noun  
+bxbwrt  xbwrh  noun  
+hxynwk  xynwk  noun  
+lmcwynwt  mcwynwt  noun  
+,  punctuation  
+nysw  nysh  verb  
+b&wrmh  &wrmh  noun  
+l$ym  $m  verb  
+ydm  yd  noun  
+&l  &l  preposition  
+kspy  ksp  noun  
+mdynywt  mdynywt  noun  
+hxwc  xwc  noun  
+,  punctuation  
+b@&nh  @&nh  noun  
+$b&tyd  &tyd  noun  
+ywgdr  hwgdr  verb  
+hby@xwn  by@xwn  noun  
+hl^wmy  l^wmy  adjective  
+bmwnxym  mwnx  noun  
+$l  $l  preposition  
+kw$r  kw$r  noun  
+txrwt  txrwt  noun  
+klkly  klkly  adjective  
+,  punctuation  
+l^  l^  negation  
+$l  $l  preposition  
+&wcmh  &wcmh  noun  
+cb^yt  cb^y  adjective  
+.  punctuation  
+start start start
+bqlypwrnyh  qlypwrnyh  properName  
+hcby&w  hcby&  verb  
+h$nh  h$nh  adverb  
+l^  l^  negation  
+pxwt  pxwt  adverb  
+m  
+%  punctuation  
+20  numeral  
+mb&ly  b&lym  noun  
+zkwt  zkwt  noun  
+hbxyrh  bxyrh  noun  
+bdw^r  dw^r  noun  
+,  punctuation  
+l^  l^  negation  
+mpny  mpny  conjunction  
+$hyw  hyh  existential  
+b^rc  ^rc  noun  
+^xrt  ^xr  adjective  
+,  punctuation  
+^w  ^w  conjunction  
+byb$t  yb$t  noun  
+^xrt  ^xr  adjective  
+,  punctuation  
+^l^  ^l^  conjunction  
+mpny  mpny  conjunction  
+$h&dypw  h&dyp  verb  
+^t  ^t  preposition  
+hnwxwt  nwxwt  noun  
+hkrwkh  krwk  adjective  
+bmylwy  mylwy  noun  
+@wpsy  @wps  noun  
+hhcb&h  hcb&h  noun  
+byn  byn  preposition  
+kwtly  kwtl  noun  
+bytm  byt  noun  
+.  punctuation  
+start start start
+yytkn  yytkn  adverb  
+m^wd  m^wd  adverb  
+$bhcb&h  hcb&h  noun  
+bqlpy  qlpy  noun  
+hyth  hyh  copula  
+ydh  yd  noun  
+$l  $l  preposition  
+hmw&mdt  mw&md  noun  
+hdmwqr@yt  dmwqr@y  adjective  
+lmw$l  mw$l  noun  
+,  punctuation  
+dy^n  dy^n  properName  
+pyyns@yyn  pyyns@yyn  properName  
+,  punctuation  
+&l  &l  preposition  
+h&lywnh  &lywn  adjective  
+.  punctuation  
+start start start
+hw^  hw^  pronoun  
+^yn@lq@w^l  ^yn@lq@w^l  noun  
+rwdny  rwdny  adjective  
+,  punctuation  
+$htyyxs  htyyxs  verb  
+bbwz  bwz  noun  
+mtn$^  htn$^  participle  
+lkl  kwl  quantifier  
+$^lh  $^lh  noun  
+$n$^l  n$^l  verb  
+,  punctuation  
+wlkl  kwl  quantifier  
+h&rh  h&rh  noun  
+$l  $l  preposition  
+yryb  yryb  noun  
+pwly@y  pwly@y  adjective  
+.  punctuation  
+start start start
+hw^  hw^  pronoun  
+h$my&  h$my&  verb  
+hkrzwt  hkrzh  noun  
+$&rwryytywt  $&rwryyty  adjective  
+bgnwt  gnwt  noun  
+my&w@ym  my&w@  noun  
+^tnyym  ^tny  adjective  
+wngd  ngd  preposition  
+qbwcwt  qbwch  noun  
+^wklwsyyh  ^wklwsyyh  noun  
+xl$wt  xl$  adjective  
+.  punctuation  
+start start start
+^z  ^z  conjunction  
+yybxr  nbxr  verb  
+l^  l^  negation  
+rq  rq  adverb  
+hqwngrs  qwngrs  noun  
+,  punctuation  
+^l^  ^l^  conjunction  
+gm  gm  conjunction  
+hn$y^  n$y^  noun  
+.  punctuation  
+start start start
+rq  rq  conjunction  
+^rb&  ^rb&  numeral  
+p&mym  p&m  noun  
+b  b  preposition
+521  numeral  
+h$nh  $nh  noun  
+h^xrwnwt  ^xrwn  adjective  
+l^  l^  negation  
+hclyx  hclyx  verb  
+n$y^  n$y^  noun  
+lxzwr  xzr  verb  
+wlhybxr  nbxr  verb  
+,  punctuation  
+^m  ^m  conjunction  
+rch  rch  verb  
+.  punctuation  
+start start start
+&d  &d  preposition  
+lpny  lpny  preposition  
+xwd$yym  xwd$  noun  
+l^  l^  negation  
+hyth  hyh  existential  
+sybh  sybh  noun  
+@wbh  @wb  adjective  
+lhnyx  hnyx  verb  
+$g'wrg'  g'wrg'  properName  
+bw$  bw$  properName  
+yhyh  hyh  copula  
+hmqrh  mqrh  noun  
+hxmy$y  xmy$y  numeral  
+.  punctuation
+start start start
+hbxyrwt  bxyrwt  noun  
+h^lh  h^lh  pronoun  
+mtnhlwt  htnhl  participle  
+&l  &l  preposition  
+mywmnwt  mywmnwt  noun  
+,  punctuation  
+l^  l^  negation  
+&l  &l  preposition  
+^ydy^wlwgyh  ^ydy^wlwgyh  noun  
+"  punctuation  
+,  punctuation  
+hkryz  hkryz  verb  
+xgygyt  xgygyt  adverb  
+myyql  myyql  properName  
+dwq^qys  dwq^qys  properName  
+,  punctuation  
+k^$r  k^$r  conjunction  
+nbxr  nbxr  verb  
+lmw&md  mw&md  noun  
+hdmwqr@y  dmwqr@y  adjective  
+ln$y^wt  n$y^wt  noun  
+.  punctuation  
+start start start
+hclxth  hclxh  noun  
+hklklyt  klkly  adjective  
+$l  $l  preposition  
+mdyntw  mdynh  noun  
+,  punctuation  
+mscws@s  mscws@s  properName  
+,  punctuation  
+hyth  hyh  copula  
+crykh  cryk  modal  
+lhywt  hyh  copula  
+h^y$wr  ^y$wr  noun  
+ldrgt  drgh  noun  
+mywmnwtw  mywmnwt  noun  
+.  punctuation  
+

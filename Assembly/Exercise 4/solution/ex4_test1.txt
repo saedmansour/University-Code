@@ -1,0 +1,9 @@
+; This is the input used in the example.
+
+. = torg + 7000
+
+Init_B:	.byte  0.,1.,1.,2.,1.,1.,4.,1.,133.
+
+.even
+
+Rate:	.word 5000

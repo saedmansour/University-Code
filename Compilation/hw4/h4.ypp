@@ -1,0 +1,1685 @@
+//------------------------------------------------------------------------------
+
+%{
+
+#include "h4.hpp"
+
+typedef enum {weight, length, area, volume, scalar, UNDEF} UnitGroup;
+
+int yylex();
+int yyerror(const char* message);
+void errorUnexpectedBreak (int lineno);
+void emitGoTo();
+
+
+vector<string> 		quads;
+stack<int> 			offsetStack;
+stack<SymbolTable*>	symbolTableStack;
+int					next_instruction = 0;
+int 				is_in_while = 0;
+bool				is_in_if	= false;
+char				tempbuff[300];
+bool				is_if_or_while = false;
+//bool				unvalidate = false;
+bool				variable_is_lvalue = false;
+string lvalue_var;
+
+
+
+//------------------------------------------------------------------------------
+//------- Buffer
+
+void printIR() {
+    for (int i = 0; i < quads.size(); ++i) {
+		cout << quads[i];
+    }
+	cout << "L" << next_instruction << ":\treturn;" << endl;
+}
+
+void emit(string s){
+    quads.insert(quads.end(), s);
+	next_instruction++;
+}
+
+void backpatch(list<int>& l, int address){
+    ostringstream os;
+    os << address;
+    for(list<int>::iterator i = l.begin(); i != l.end(); i++){
+		quads[*i] += os.str() + ";\n";
+    }
+}
+
+
+//------------------------------------------------------------------------------
+//------- IR helpers
+
+string new_exp_type(string exp_type1, string exp_type2) {
+	if(exp_type1 == "variable" || exp_type2 == "variable") {
+		return "variable";
+	} 
+	return "number";
+}
+
+
+
+
+//------------------------------------------------------------------------------
+//------- Scope Functions
+
+int currentScopeOffset(){
+	int i = 0;
+	SymbolTable* ptr = symbolTableStack.top();
+	while(ptr->parent != NULL){
+		i++;
+		ptr = ptr->parent;
+	}
+	return i;
+}
+
+
+void printEndScope(list<Symbol*>* symbols){
+
+	endScope(currentScopeOffset());
+
+	list<Symbol*>* _symbols = symbols;
+	list<Symbol*>::iterator it;
+	for (it=_symbols->begin(); it!=_symbols->end(); it++)
+	{
+		printVar ((*it)->name.c_str(), (*it)->type, (*it)->offset, (*it)->isValidValue, (*it)->value);
+	}	
+}
+
+
+//------------------------------------------------------------------------------
+//------- Symbol Table Functions
+
+SymbolTable* Maketable(SymbolTable* p) 
+{
+	SymbolTable* table = new SymbolTable;
+	table->parent = p;
+	table->symbols = new list<Symbol*>();
+	return table;
+}
+
+bool isDefined(SymbolTable* table, string name)
+{
+	list<Symbol*>* symbols = table->symbols;
+	list<Symbol*>::iterator it;
+	for (it=symbols->begin(); it!=symbols->end(); it++)
+	{
+		if((*it)->name == name)
+		{
+			return true;
+		}
+	}	
+	return false;
+}
+
+bool insert(SymbolTable* table, string name, int type, int offset, double value, bool isValidValue) {
+	if(isDefined(table, name))
+	{
+		return false;
+	}
+
+	Symbol* symbol = new Symbol;
+	symbol->name = name;
+	symbol->type = type;
+	symbol->offset = offset;
+	symbol->isValidValue = isValidValue;
+	if(isValidValue){
+		symbol->value = value;
+	}
+	table->symbols->push_back(symbol);
+	return true;
+}
+
+void removeCurrentSymbolTable() {
+	SymbolTable* table = symbolTableStack.top();
+	printEndScope(table->symbols);
+	list<Symbol*>* symbols = table->symbols;
+	list<Symbol*>::iterator it;
+	for (it=symbols->begin(); it!=symbols->end(); it++){
+		delete (*it);
+		offsetStack.pop();
+	}
+	delete table->symbols;
+	symbolTableStack.pop();
+}
+
+
+Symbol* findAux(string name) {
+	for(SymbolTable* table = symbolTableStack.top(); table != NULL; table=table->parent)
+	{
+		list<Symbol*>* symbols = table->symbols;
+		list<Symbol*>::iterator it;
+		for (it=symbols->begin(); it!=symbols->end(); it++)
+		{
+			if((*it)->name == name)
+			{
+				return (*it);
+			}
+		}	
+	}
+	return NULL;
+}
+
+bool find(string name)
+{
+	if(findAux(name) == NULL) {
+		return false;
+	}
+	return true;
+}
+
+unsigned int findOffset(string name) {
+	if(!find(name)) {
+		return 0;
+	}
+	return findAux(name)->offset;
+}
+
+double findValue(string name) {
+	if(!find(name)) {
+		return 0.0;
+	}
+	return findAux(name)->value;
+}
+
+int findType(string name) {
+	if(!find(name)) {
+		return _NOT_DEFINED_;
+	}
+	return findAux(name)->type;
+}
+
+SymbolTable*  findTable(string name) {
+	for(SymbolTable* table = symbolTableStack.top(); table != NULL; table=table->parent)
+	{
+		if(isDefined(table, name)){
+			return table;
+		}
+	}
+	return NULL;
+}
+
+bool update(string name, double value) {
+	if(findAux(name) == NULL) {
+		return false;
+	}
+	findAux(name)->value = value;
+	return true;
+}
+
+void updateIsValid(string name) {
+	findAux(name)->isValidValue = true;
+}
+
+void updateIsValidFalse(string name) {
+	if(findAux(name) != NULL) {
+		findAux(name)->isValidValue = false;
+	}
+	
+}
+
+bool isValidated(string name) {
+	return findAux(name)->isValidValue;
+}
+
+
+//------------------------------------------------------------------------------
+//------- Conversion Functions
+
+double convert(int ltype, int rtype, double val) {
+	if(ltype == rtype) {
+		return val;
+	}
+
+	double conversionMap[_NOT_DEFINED_][_NOT_DEFINED_] = {0};
+	int i=0,j=0;
+	for(i=0;i<_NOT_DEFINED_;i++){
+		for(j=0;j<_NOT_DEFINED_;j++){
+		conversionMap[i][j] = 0;	
+		}
+	}		
+	//The Weight conversions
+	conversionMap[_kg_][_SCALAR_] 	= 1e0;
+	conversionMap[_kg_][_kg_] 		= 1e0;
+	conversionMap[_kg_][_gram_] 	= 1e3;
+	conversionMap[_kg_][_mg_] 		= 1e6;
+	
+	conversionMap[_gram_][_SCALAR_] 	= 1e0;
+	conversionMap[_gram_][_kg_] 		= 1e-3;
+	conversionMap[_gram_][_gram_] 		= 1e0;
+	conversionMap[_gram_][_mg_] 		= 1e3;
+	
+	
+	conversionMap[_mg_][_SCALAR_] 	= 1e0;
+	conversionMap[_mg_][_kg_] 		= 1e-6;
+	conversionMap[_mg_][_gram_] 	= 1e-3;
+	conversionMap[_mg_][_mg_] 		= 1e0;
+
+	//The Length conversions	
+	conversionMap[_km_][_SCALAR_] 	= 1e0;
+	conversionMap[_km_][_km_] 		= 1e0;
+	conversionMap[_km_][_meter_] 		= 1e3;
+	conversionMap[_km_][_cm_] 		= 1e5;
+	
+	conversionMap[_meter_][_SCALAR_] 		= 1e0;
+	conversionMap[_meter_][_km_] 		= 1e-3;
+	conversionMap[_meter_][_meter_] 		= 1e0;
+	conversionMap[_meter_][_cm_] 		= 1e2;
+	
+	conversionMap[_cm_][_SCALAR_] 	= 1e0;
+	conversionMap[_cm_][_km_] 		= 1e-5;
+	conversionMap[_cm_][_meter_] 	= 1e-2;
+	conversionMap[_cm_][_cm_] 		= 1e0;
+	
+	//The Area conversions
+	conversionMap[_km2_][_SCALAR_] 	= 1e0;
+	conversionMap[_km2_][_km2_] 	= 1e0;
+	conversionMap[_km2_][_meter2_] 		= 1e6;
+	conversionMap[_km2_][_cm2_] 	= 1e10;
+	
+	conversionMap[_meter2_][_SCALAR_] 	= 1e0;
+	conversionMap[_meter2_][_km2_] 		= 1e-6;
+	conversionMap[_meter2_][_meter2_] 		= 1e0;
+	conversionMap[_meter2_][_cm2_] 		= 1e4;
+	
+	conversionMap[_cm2_][_SCALAR_] 	= 1e0;
+	conversionMap[_cm2_][_km2_] 	= 1e-10;
+	conversionMap[_cm2_][_meter2_] 		= 1e-4;
+	conversionMap[_cm2_][_cm2_] 	= 1e0;
+
+	//The Volume conversions
+	conversionMap[_km3_][_SCALAR_] 	= 1e0;
+	conversionMap[_km3_][_km3_] 	= 1e0;
+	conversionMap[_km3_][_meter3_] 		= 1e9;
+	conversionMap[_km3_][_cm3_] 	= 1e15;
+	
+	conversionMap[_meter3_][_SCALAR_]	= 1e0;
+	conversionMap[_meter3_][_km3_] 		= 1e-9;
+	conversionMap[_meter3_][_meter3_] 		= 1e0;
+	conversionMap[_meter3_][_cm3_] 		= 1e6;
+	
+	conversionMap[_cm3_][_SCALAR_] 	= 1e0;
+	conversionMap[_cm3_][_km3_] 	= 1e-15;
+	conversionMap[_cm3_][_meter3_] 		= 1e-6;
+	conversionMap[_cm3_][_cm3_] 	= 1e0;
+
+	conversionMap[_SCALAR_][_kg_] 	= 1e0;
+	conversionMap[_SCALAR_][_gram_] 	= 1e0;
+	conversionMap[_SCALAR_][_mg_] 	= 1e0;
+	conversionMap[_SCALAR_][_km_] 	= 1e0;
+	conversionMap[_SCALAR_][_meter_] 	= 1e0;
+	conversionMap[_SCALAR_][_cm_] 	= 1e0;
+	conversionMap[_SCALAR_][_km2_]	= 1e0;
+	conversionMap[_SCALAR_][_meter2_] 	= 1e0;
+	conversionMap[_SCALAR_][_cm2_] 	= 1e0;
+	conversionMap[_SCALAR_][_km3_] 	= 1e0;
+	conversionMap[_SCALAR_][_meter3_] 	= 1e0;
+	conversionMap[_SCALAR_][_cm3_] 	= 1e0;
+	conversionMap[_SCALAR_][_SCALAR_] 	= 1e0;
+	
+	//This conversions are for the Divide & multiply operations.
+	
+	//The Length conversions
+	conversionMap[_km_][_km2_] 		= 1e0;	//convert _km_ to _km_
+	conversionMap[_km_][_meter2_] 		= 1e3;	//convert _km_ to _meter_
+	conversionMap[_km_][_cm2_] 		= 1e5;	//convert _km_ to _Cm_
+	conversionMap[_km_][_km3_] 		= 1e0;	//convert _km_ to _km_
+	conversionMap[_km_][_meter3_] 		= 1e3;	//convert _km_ to _meter_
+	conversionMap[_km_][_cm3_] 		= 1e5;	//convert _km_ to _Cm_
+
+	conversionMap[_meter_][_km2_] 		= 1e-3;	//convert _meter_ to _km_
+	conversionMap[_meter_][_meter2_] 		= 1e0;	//convert _meter_ to _meter_
+	conversionMap[_meter_][_cm2_] 		= 1e2;	//convert _meter_ to _Cm_
+	conversionMap[_meter_][_km3_] 		= 1e-3;	//convert _meter_ to _km_
+	conversionMap[_meter_][_meter3_] 		= 1e0;	//convert _meter_ to _meter_
+	conversionMap[_meter_][_cm3_] 		= 1e2;	//convert _meter_ to _Cm_
+		
+	conversionMap[_cm_][_km2_] 		= 1e-5;	//convert _cm_ to _km_
+	conversionMap[_cm_][_meter2_] 		= 1e-2;	//convert _cm_ to _meter_
+	conversionMap[_cm_][_cm2_] 		= 1e0;	//convert _cm_ to _cm_
+	conversionMap[_cm_][_km3_] 		= 1e-5;	//convert _cm_ to _km_
+	conversionMap[_cm_][_meter3_] 		= 1e-2;	//convert _cm_ to _meter_
+	conversionMap[_cm_][_cm3_] 		= 1e0;	//convert _cm_ to _cm_
+	
+	//The Area conversions
+	conversionMap[_km2_][_km_] 		= 1e0;	//convert _km2_ to _km2_
+	conversionMap[_km2_][_meter_] 		= 1e6;	//convert _km2_ to _meter2_
+	conversionMap[_km2_][_cm_] 		= 1e10;	//convert _km2_ to _cm2_
+	conversionMap[_km2_][_km3_] 	= 1e0;	//convert _km2_ to _km2_
+	conversionMap[_km2_][_meter3_] 		= 1e6;	//convert _km2_ to _meter2_
+	conversionMap[_km2_][_cm3_] 	= 1e10;	//convert _km2_ to _cm2_
+
+	conversionMap[_meter2_][_km_] 		= 1e-6;	//convert _meter2_ to _km2_
+	conversionMap[_meter2_][_meter_] 		= 1e0;	//convert _meter2_ to _km2_
+	conversionMap[_meter2_][_cm_] 		= 1e4;	//convert _meter2_ to _cm2_
+	conversionMap[_meter2_][_km3_] 		= 1e-6;	//convert _meter2_ to _km2_
+	conversionMap[_meter2_][_meter3_] 		= 1e0;	//convert _meter2_ to _meter2_
+	conversionMap[_meter2_][_cm3_] 		= 1e4;	//convert _meter2_ to _cm2_
+
+	conversionMap[_cm2_][_km_] 		= 1e-10;	//convert _cm2_ to _km2_
+	conversionMap[_cm2_][_meter_] 		= 1e-4;		//convert _cm2_ to _meter2_
+	conversionMap[_cm2_][_cm_] 		= 1e0;		//convert _cm2_ to _cm2_
+	conversionMap[_cm2_][_km3_] 	= 1e-10;	//convert _cm2_ to _km2_
+	conversionMap[_cm2_][_meter3_] 		= 1e-4;		//convert _cm2_ to _meter2_
+	conversionMap[_cm2_][_cm3_] 	= 1e0;		//convert _cm2_ to _cm2_
+	
+	return conversionMap[rtype][ltype] * val;
+}
+
+int calculateMulNewType(int ltype, int rtype){
+	int conversionMap[_NOT_DEFINED_][_NOT_DEFINED_] = {_NOT_DEFINED_};
+	int i=0,j=0;
+	for(i=0;i<_NOT_DEFINED_;i++){
+		for(j=0;j<_NOT_DEFINED_;j++){
+		conversionMap[i][j] = _NOT_DEFINED_;	
+		}
+	}	
+	
+	conversionMap[_km_][_SCALAR_]  	= _km_;
+	conversionMap[_km_][_cm_]  		= _km2_;
+	conversionMap[_km_][_meter_]  	= _km2_;
+	conversionMap[_km_][_km_]  		= _km2_;
+	conversionMap[_km_][_cm2_]  	= _km3_;
+	conversionMap[_km_][_meter2_]  	= _km3_;
+	conversionMap[_km_][_km2_]  	= _km3_;	
+
+	conversionMap[_meter_][_SCALAR_]  	= _meter_;
+	conversionMap[_meter_][_cm_]  		= _meter2_;
+	conversionMap[_meter_][_meter_]  	= _meter2_;
+	conversionMap[_meter_][_km_]  		= _meter2_;
+	conversionMap[_meter_][_cm2_]  		= _meter3_;
+	conversionMap[_meter_][_meter2_]  	= _meter3_;
+	conversionMap[_meter_][_km2_]  		= _meter3_;
+	
+	conversionMap[_cm_][_SCALAR_]  	= _cm_;
+	conversionMap[_cm_][_cm_]  		= _cm2_;
+	conversionMap[_cm_][_meter_]  	= _cm2_;
+	conversionMap[_cm_][_km_]  		= _cm2_;
+	conversionMap[_cm_][_cm2_]  	= _cm3_;
+	conversionMap[_cm_][_meter2_]  	= _cm3_;
+	conversionMap[_cm_][_km2_]  	= _cm3_;	
+	
+	
+	conversionMap[_km2_][_SCALAR_]  	= _km2_;
+	conversionMap[_km2_][_cm_]  		= _km3_;
+	conversionMap[_km2_][_meter_]  		= _km3_;
+	conversionMap[_km2_][_km_]  		= _km3_;
+	
+	conversionMap[_meter2_][_SCALAR_]  	= _meter2_;
+	conversionMap[_meter2_][_cm_]  		= _meter3_;
+	conversionMap[_meter2_][_meter_]  	= _meter3_;
+	conversionMap[_meter2_][_km_]  		= _meter3_;
+	
+	conversionMap[_cm2_][_SCALAR_]  	= _cm2_;
+	conversionMap[_cm2_][_cm_]  		= _km3_;
+	conversionMap[_cm2_][_meter_]  		= _km3_;
+	conversionMap[_cm2_][_km_]  		= _km3_;
+	
+	conversionMap[_km3_][_SCALAR_]		= _km3_;
+	conversionMap[_meter3_][_SCALAR_]	= _meter3_;
+	conversionMap[_cm3_][_SCALAR_]		= _cm3_;
+	
+	conversionMap[_kg_][_SCALAR_]		= _kg_;
+	conversionMap[_gram_][_SCALAR_]		= _gram_;
+	conversionMap[_mg_][_SCALAR_]		= _mg_;
+	
+	conversionMap[_SCALAR_][_km_]		= _km_;
+	conversionMap[_SCALAR_][_meter_]	= _meter_;
+	conversionMap[_SCALAR_][_cm_]		= _cm_;
+	conversionMap[_SCALAR_][_km2_]		= _km2_;
+	conversionMap[_SCALAR_][_meter2_]	= _meter2_;
+	conversionMap[_SCALAR_][_cm2_]		= _cm2_;
+	conversionMap[_SCALAR_][_km3_]		= _km3_;
+	conversionMap[_SCALAR_][_meter3_]	= _meter3_;
+	conversionMap[_SCALAR_][_cm3_]		= _cm3_;
+	
+	conversionMap[_SCALAR_][_kg_]		= _kg_;
+	conversionMap[_SCALAR_][_gram_]		= _gram_;
+	conversionMap[_SCALAR_][_mg_]		= _mg_;
+	
+	conversionMap[_SCALAR_][_SCALAR_]		= _SCALAR_;
+	
+	return conversionMap[ltype][rtype];
+}
+
+int calculateDivNewType(int ltype, int rtype){
+	int conversionMap[_NOT_DEFINED_][_NOT_DEFINED_] = {_NOT_DEFINED_};
+	int i=0,j=0;
+	for(i=0;i<_NOT_DEFINED_;i++){
+		for(j=0;j<_NOT_DEFINED_;j++){
+		conversionMap[i][j] = _NOT_DEFINED_;	
+		}
+	}	
+	conversionMap[_km_][_SCALAR_]  	= _km_;
+	conversionMap[_km_][_cm_]  		= _SCALAR_;
+	conversionMap[_km_][_meter_]  	= _SCALAR_;
+	conversionMap[_km_][_km_]  		= _SCALAR_;
+
+	conversionMap[_meter_][_SCALAR_]  	= _meter_;
+	conversionMap[_meter_][_cm_]  		= _SCALAR_;
+	conversionMap[_meter_][_meter_]  	= _SCALAR_;
+	conversionMap[_meter_][_km_]  		= _SCALAR_;
+	
+	conversionMap[_cm_][_SCALAR_]  	= _cm_;
+	conversionMap[_cm_][_cm_]  		= _SCALAR_;
+	conversionMap[_cm_][_meter_]  	= _SCALAR_;
+	conversionMap[_cm_][_km_]  		= _SCALAR_;
+	
+	conversionMap[_km2_][_SCALAR_]  = _km2_;
+	conversionMap[_km2_][_cm_]  	= _km_;
+	conversionMap[_km2_][_meter_]  	= _km_;
+	conversionMap[_km2_][_km_]  	= _km_;
+	conversionMap[_km2_][_cm2_]  	= _SCALAR_;
+	conversionMap[_km2_][_meter2_]  = _SCALAR_;
+	conversionMap[_km2_][_km2_]  	= _SCALAR_;
+
+
+	
+	conversionMap[_meter2_][_SCALAR_]  	= _km2_;
+	conversionMap[_meter2_][_cm_]  		= _meter_;
+	conversionMap[_meter2_][_meter_]  	= _meter_;
+	conversionMap[_meter2_][_km_]  		= _meter_;
+	conversionMap[_meter2_][_cm2_]  	= _SCALAR_;
+	conversionMap[_meter2_][_meter2_]  	= _SCALAR_;
+	conversionMap[_meter2_][_km2_]  	= _SCALAR_;	
+	
+	
+	conversionMap[_cm2_][_SCALAR_]  	= _cm2_;
+	conversionMap[_cm2_][_cm_]  		= _cm_;
+	conversionMap[_cm2_][_meter_]  		= _cm_;
+	conversionMap[_cm2_][_km_]  		= _cm_;
+	conversionMap[_cm2_][_cm2_]  		= _SCALAR_;
+	conversionMap[_cm2_][_meter2_]  	= _SCALAR_;
+	conversionMap[_cm2_][_km2_]  		= _SCALAR_;	
+	
+	conversionMap[_km3_][_SCALAR_]		= _km3_;
+	conversionMap[_km3_][_cm_]  		= _km2_;
+	conversionMap[_km3_][_meter_]  		= _km2_;
+	conversionMap[_km3_][_km_]  		= _km2_;
+	conversionMap[_km3_][_cm2_]  		= _km_;
+	conversionMap[_km3_][_meter2_]  	= _km_;
+	conversionMap[_km3_][_km2_]  		= _km_;	
+	conversionMap[_km3_][_cm3_]  		= _SCALAR_;
+	conversionMap[_km3_][_meter3_]  	= _SCALAR_;
+	conversionMap[_km3_][_km3_]  		= _SCALAR_;
+	
+	conversionMap[_meter3_][_SCALAR_]	= _meter3_;
+	conversionMap[_meter3_][_cm_]  		= _meter2_;
+	conversionMap[_meter3_][_meter_]  	= _meter2_;
+	conversionMap[_meter3_][_km_]  		= _meter2_;
+	conversionMap[_meter3_][_cm2_]  	= _meter_;
+	conversionMap[_meter3_][_meter2_]  	= _meter_;
+	conversionMap[_meter3_][_km2_]  	= _meter_;	
+	conversionMap[_meter3_][_cm3_]  	= _SCALAR_;
+	conversionMap[_meter3_][_meter3_]  	= _SCALAR_;
+	conversionMap[_meter3_][_km3_]  	= _SCALAR_;
+	
+	conversionMap[_cm3_][_SCALAR_]		= _cm3_;
+	conversionMap[_cm3_][_cm_]  		= _cm2_;
+	conversionMap[_cm3_][_meter_]  		= _cm2_;
+	conversionMap[_cm3_][_km_]  		= _cm2_;
+	conversionMap[_cm3_][_cm2_]  		= _cm_;
+	conversionMap[_cm3_][_meter2_]  	= _cm_;
+	conversionMap[_cm3_][_km2_]  		= _cm_;	
+	conversionMap[_cm3_][_cm3_]  		= _SCALAR_;
+	conversionMap[_cm3_][_meter3_]  	= _SCALAR_;
+	conversionMap[_cm3_][_km3_]  		= _SCALAR_;
+	
+	conversionMap[_kg_][_SCALAR_]		= _kg_;
+	conversionMap[_kg_][_kg_]			= _SCALAR_;
+	conversionMap[_kg_][_gram_]			= _SCALAR_;
+	conversionMap[_kg_][_mg_]			= _SCALAR_;
+	
+	conversionMap[_gram_][_SCALAR_]		= _gram_;
+	conversionMap[_gram_][_kg_]			= _SCALAR_;
+	conversionMap[_gram_][_gram_]		= _SCALAR_;
+	conversionMap[_gram_][_mg_]			= _SCALAR_;
+	
+	conversionMap[_mg_][_SCALAR_]		= _mg_;
+	conversionMap[_mg_][_kg_]			= _SCALAR_;
+	conversionMap[_mg_][_gram_]			= _SCALAR_;
+	conversionMap[_mg_][_mg_]			= _SCALAR_;
+	
+	conversionMap[_SCALAR_][_SCALAR_]	= _SCALAR_;
+
+	return conversionMap[ltype][rtype];
+}
+
+UnitGroup belongsTo(int type){
+	switch (type){
+		case _kg_ :
+		case _gram_ : 
+		case _mg_ :
+			return weight;
+		case _km_ :
+		case _meter_ :
+		case _cm_ :
+			return length;
+		case _km2_ :
+		case _meter2_ :
+		case _cm2_ :
+			return area;
+		case _km3_ :
+		case _meter3_ :
+		case _cm3_ :
+			return volume;
+		case _SCALAR_ :
+			return scalar;	
+	}
+	return UNDEF;
+}
+
+bool typeMistmachMul(int ltype, int rtype) {
+	UnitGroup rGroup = belongsTo(rtype);
+	UnitGroup lGroup = belongsTo(ltype);
+	
+	if(lGroup == scalar || rGroup == scalar) {
+		return false;
+	}
+	
+	if (    lGroup == area && rGroup == area   || 
+			lGroup == area && rGroup == volume || 
+			lGroup == volume && rGroup == area ||
+			
+			lGroup == volume && rGroup == volume ||
+			lGroup == volume && rGroup == length ||
+			lGroup == length && rGroup == volume ||
+			
+			lGroup == weight && rGroup != scalar ||
+			lGroup != scalar && lGroup == weight
+		) 
+	{
+		return true;
+	}
+	return false;
+}
+
+bool typeMistmachDiv(int ltype, int rtype) {
+	UnitGroup rGroup = belongsTo(rtype);
+	UnitGroup lGroup = belongsTo(ltype);
+	
+	if(lGroup == weight && !(rGroup == weight || rGroup == scalar)) return true;
+	if(lGroup == scalar && !(rGroup == scalar))	return true;
+	if(lGroup == length && !(rGroup == length || rGroup == scalar)) return true;
+	if(lGroup == area 	 &&	!(rGroup == area || rGroup == length || rGroup == scalar))	return true;
+	if(lGroup == volume && rGroup == weight) return true;
+
+	return false;
+}
+
+bool typeMistmachPlusMinus(int ltype, int rtype) {
+	bool conversionMap[_NOT_DEFINED_][_NOT_DEFINED_] = {true};
+	int i=0,j=0;
+	for(i=0;i<_NOT_DEFINED_;i++){
+		for(j=0;j<_NOT_DEFINED_;j++){
+		conversionMap[i][j] = true;	
+		}
+	}
+	
+	conversionMap[_kg_][_kg_] 	= false;
+	conversionMap[_kg_][_gram_] 	= false;
+	conversionMap[_kg_][_mg_] 	= false;
+	conversionMap[_gram_][_kg_] 	= false;
+	conversionMap[_gram_][_gram_] 	= false;
+	conversionMap[_gram_][_mg_] 	= false;
+	conversionMap[_mg_][_kg_] 	= false;
+	conversionMap[_mg_][_gram_] 	= false;
+	conversionMap[_mg_][_mg_] 	= false;
+	
+	conversionMap[_km_][_km_] 	= false;
+	conversionMap[_km_][_meter_] 	= false;
+	conversionMap[_km_][_cm_] 	= false;
+	conversionMap[_meter_][_km_] 	= false;
+	conversionMap[_meter_][_meter_] 	= false;
+	conversionMap[_meter_][_cm_] 	= false;
+	conversionMap[_cm_][_km_] 	= false;
+	conversionMap[_cm_][_meter_] 	= false;
+	conversionMap[_cm_][_cm_] 	= false;
+	
+	conversionMap[_km2_][_km2_] = false;
+	conversionMap[_km2_][_meter2_] 	= false;
+	conversionMap[_km2_][_cm2_] = false;
+	conversionMap[_meter2_][_km2_] 	= false;
+	conversionMap[_meter2_][_meter2_] 	= false;
+	conversionMap[_meter2_][_cm2_] 	= false;
+	conversionMap[_cm2_][_km2_] = false;
+	conversionMap[_cm2_][_meter2_] 	= false;
+	conversionMap[_cm2_][_cm2_] = false;
+
+	conversionMap[_km3_][_km3_] = false;
+	conversionMap[_km3_][_meter3_] 	= false;
+	conversionMap[_km3_][_cm3_] = false;
+	conversionMap[_meter3_][_km3_] 	= false;
+	conversionMap[_meter3_][_meter3_] 	= false;
+	conversionMap[_meter3_][_cm3_] 	= false;
+	conversionMap[_cm3_][_km3_] = false;
+	conversionMap[_cm3_][_meter3_] 	= false;
+	conversionMap[_cm3_][_cm3_] = false;
+	
+	conversionMap[_SCALAR_][_SCALAR_] = false;
+
+
+	return conversionMap[ltype][rtype];
+}
+
+bool typeMistmachAssign(int ltype, int rtype) {
+	UnitGroup rGroup = belongsTo(rtype);
+	UnitGroup lGroup = belongsTo(ltype);
+		
+	if(rGroup == scalar) {
+		return false;
+	}	
+	if ( lGroup != rGroup){
+		return true;
+	}
+	return false;
+}
+
+
+
+%}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//------------------------------------------------------------------------------
+//------- Tokens
+
+%token  _kg_ _gram_ _mg_ _km_ _meter_ _cm_ _km2_ _meter2_ _cm2_ _km3_ _meter3_ _cm3_ _SCALAR_ _NOT_DEFINED_ _show_ _plus_ _minus_ _mult_ _div_ _if_ _else_ _while_ _break_ _plus_ _minus_ _mult_ _div_ _greater_ _greater_equals_ _less_ _less_equals_ _equals_ _not_equals_ _and_ _or_ _not_ _true_ _false_ _string_ _leftP_ _rightP_ _blockStart_ _blockEnd_ _end_ _comma_ _assign_ _number_ _id_ 
+%right _assign_
+%left _less_ _less_equals_ _greater_ _greater_equals_ 
+%left  _equals_ _not_equals_ 
+%left _and_
+%left _or_
+%left  _minus_ _plus_ 
+%left  _mult_ 	_div_
+%right _not_  
+%right _leftP_
+%%
+
+
+
+
+
+
+
+
+//------------------------------------------------------------------------------
+//------- Parsing Rules
+
+
+Prog : O Statements M{
+	removeCurrentSymbolTable();
+	backpatch($2.next_list, $3.instruction);
+	backpatch($2.false_list, $3.instruction);
+	printIR();
+};
+
+O : {
+	symbolTableStack.push(Maketable(NULL));
+	offsetStack.push(-1);
+};
+
+
+
+//------------------------------------------------------------------------------
+//------- Statement Rules
+
+
+FC: {
+	is_in_if = false;
+	is_if_or_while = false;
+}
+
+FO: {
+	is_in_if = true;
+	is_if_or_while = true;
+}
+
+//Statements: Statements M Statement  {
+Statements: Statement M Statements {
+				backpatch($1.next_list, $2.instruction);
+				$$.next_list = $3.next_list;
+				$$.false_list = $1.false_list;
+				$$.false_list.merge($3.false_list);
+			}
+			| Statement	{
+				$$.next_list = $1.next_list;
+				$$.false_list = $1.false_list;
+			}
+;
+
+Statement:    _blockStart_ Q Statements _blockEnd_ {
+				$$.next_list.clear();
+				removeCurrentSymbolTable();
+				$$.next_list.merge($3.next_list);
+				$$.false_list = $3.false_list;
+				
+			}
+			
+			| _blockStart_ Q _blockEnd_ {
+				removeCurrentSymbolTable();
+			}
+			
+			| _if_ FO _leftP_  Cond  _rightP_  M Statement FC{
+				$$.next_list.clear();
+				backpatch($4.true_list, $6. instruction);
+				$$.next_list.merge($4.false_list);
+				$$.next_list.merge($7.next_list);
+				$$.false_list = $7.false_list;
+				
+				is_in_if = false;
+			}
+			
+			| _if_ FO _leftP_  Cond  _rightP_ M Statement _else_ FC FO N M Statement FC{
+				backpatch($4.true_list,$6.instruction);
+				backpatch($4.false_list,$12.instruction);
+				$$.next_list = $7.next_list;
+				$$.next_list.merge($11.next_list);
+				$$.next_list.merge($13.next_list);
+				$$.false_list = $7.false_list;
+				$$.false_list.merge($13.false_list);
+				is_in_if = false;
+			}
+			
+			| _while_ FO G M _leftP_  Cond  _rightP_  M Statement FC {
+				$$.next_list.clear();
+				backpatch($9.next_list, $4.instruction);
+				backpatch($6.true_list, $8.instruction);
+				$6.false_list.merge($9.false_list);
+				$$.next_list.merge($6.false_list);
+				sprintf(tempbuff, "L%d:\tgoto L%d;\n", next_instruction, $4.instruction);
+				emit(tempbuff);
+				is_in_while--;
+			}
+
+			| _break_ _end_ {
+				$$.next_list.clear();
+				if(!is_in_while){
+					errorUnexpectedBreak(yylineno);	
+				}
+				$$.false_list.push_back(next_instruction);
+			//	$$.next_list.push_back(next_instruction);
+				emitGoTo();
+			}
+			
+			| _end_  {
+				$$.next_list.clear();
+			}
+
+
+			| Type w_id_ _end_{
+				$$.next_list.clear();
+				
+				if(is_in_if) {
+					SymbolTable* table = Maketable(symbolTableStack.top());
+					symbolTableStack.push(table);
+				}				
+				if(isDefined(symbolTableStack.top(), $2.name)){
+					errorDef(yylineno, $2.name.c_str());
+				}
+				offsetStack.push(offsetStack.top());
+				offsetStack.top()+=1;
+				insert(symbolTableStack.top(), $2.name, $1.type, offsetStack.top(), 0.0, false);
+				$2.type = $1.type;
+				
+				if(is_in_if) {
+					removeCurrentSymbolTable();
+				}
+			}
+			
+			
+ 			|  Type  w_id_ _assign_ U UC Exp _end_ {
+				
+				string name = $2.name;
+				int	   type_left  = $1.type;
+				int	   type_right = $6.type;
+				string right_exp_type = $6.exp_type;
+				double right_val = $6.val;
+				double left_val;
+				string right_name = $6.name;
+			
+				//if(is_if_or_while) {
+				//	updateIsValidFalse(name);
+				//}
+			
+				if(is_in_if) {
+					SymbolTable* table = Maketable(symbolTableStack.top());
+					symbolTableStack.push(table);
+				}
+				if(isDefined(symbolTableStack.top(), name)){
+					errorDef(yylineno, name.c_str());
+				}
+				if(typeMistmachAssign(type_left, type_right)){
+					errorMismatch (yylineno, type_left, type_right);
+				}
+				offsetStack.push(offsetStack.top());
+				offsetStack.top()+=1;
+				
+				//$3.type = type_left;
+				
+				bool isValidated = false;
+				if(right_exp_type == "number") {
+					left_val	= convert(type_left,type_right,right_val); //todo: not num
+					isValidated = true;
+				}
+				
+				insert(symbolTableStack.top(), name, type_left, offsetStack.top(), left_val, isValidated); //todo: not num
+				
+				char* buffExpType = new char[100];
+				//if(right_exp_type == "number"  && !(is_if_or_while && right_is_validated_var)) {
+				if(right_exp_type == "number") {
+					emitAssignment(findOffset(name), type_left, expToNumber(left_val, buffExpType)); // OTdelete
+				} else {
+					//if(is_if_or_while && right_is_validated_var) {
+					//	updateIsValidFalse(name);
+					//}
+					if(type_left != findType(right_name)) {
+							double proportion = convert(type_left, findType(right_name), 1);
+							char* tempbuff = new char[100];
+							char* tempbuff2 = new char[100];
+							emitAOP (findOffset(name),type_left, expToLocation(findOffset(right_name), tempbuff),  '*', expToNumber(proportion, tempbuff2));
+							delete tempbuff;
+							delete tempbuff2;
+					} else { 
+						emitAssignment(findOffset(name), type_left,  expToLocation(findOffset(right_name), buffExpType));
+					}
+				}
+				delete buffExpType;
+				if(is_in_if) {
+					removeCurrentSymbolTable();
+				}
+			}
+
+
+			| U w_id_ UC _assign_ Exp _end_{
+				$$.next_list.clear();
+				string name = $2.name;
+				int	   type_left  = $2.type;
+				int	   type_right = $5.type;
+				string right_exp_type = $5.exp_type;
+				double right_val = $5.val;
+				double left_val = $2.val;
+				string right_name = $5.name;
+				
+				if(is_if_or_while) {
+					updateIsValidFalse(name);
+				}
+			
+				if(!find(name)) { 
+					errorUndef (yylineno, name.c_str());
+				}
+				if(typeMistmachAssign(findType(name), type_right)){
+					errorMismatch (yylineno, type_left, type_right);
+				}
+				
+				if(right_exp_type == "number") {
+					left_val = convert(findType(name),type_right, right_val);
+					updateIsValid(name);
+				}
+				
+				update(name, left_val);
+								
+				//IR STUFF
+				char* buff = new char[100];
+				
+				if(right_exp_type == "number") {
+				//if(right_exp_type == "number"  && !(is_if_or_while && right_is_validated_var)) {
+					emitAssignment(findOffset(name),findType(name),  expToNumber(left_val, buff)); // OTdelete
+				} else {
+					//if(is_if_or_while && right_is_validated_var) {
+					//	updateIsValidFalse(name);
+					//}
+					//emitAssignment(findOffset(name),findType(name),  expToLocation(findOffset(right_name), buff));
+					if(findType(right_name) != findType(name)) {
+							string newVariableName2 = freshTemp();
+							offsetStack.push(offsetStack.top());
+							offsetStack.top()+=1;
+							insert(symbolTableStack.top(), newVariableName2, $$.type, offsetStack.top(), 0.0, false);
+							
+							double proportion = convert(findType(name), findType(right_name), 1);
+							
+							char* tempbuff = new char[100];
+							char* tempbuff2 = new char[100];
+							emitAOP (findOffset(name), findType(name), expToLocation(findOffset(right_name), tempbuff),  '*', expToNumber(proportion, tempbuff2));
+							delete tempbuff;
+							delete tempbuff2;
+					} else { 
+						emitAssignment(findOffset(name),findType(name),  expToLocation(findOffset(right_name), buff));
+					}
+				}
+				delete buff;
+			}
+
+			
+			| _show_ _leftP_ ShowList _rightP_ _end_ {
+				$$.next_list.clear();
+			}
+;
+
+U: {
+	variable_is_lvalue = true;
+}
+
+UC: {
+	if(is_if_or_while && variable_is_lvalue) {
+				updateIsValidFalse(lvalue_var);
+	}
+	variable_is_lvalue = false;
+}
+
+
+Q : {
+	is_in_if = false;
+	SymbolTable* table = Maketable(symbolTableStack.top());
+	symbolTableStack.push(table);
+};
+
+G : {
+	is_in_while++;
+};
+
+
+
+
+//------------------------------------------------------------------------------
+//------- ShowList Rules
+
+ShowList:	ShowList _comma_ ShowItem	{}
+			| ShowItem {}
+
+ShowItem: Exp {
+			if($1.exp_type == "variable") {
+			    if(isValidated($1.name)) {
+						   emitConst(findValue($1.name), findType($1.name));
+				   } else {
+						   emitId(findOffset($1.name), findType($1.name));
+				   }
+			    }
+			    else {
+				 	   emitConst($1.val, $1.type);
+			    }
+			}
+		 |_string_ {
+			//IR
+			emitString((char*)$1.name.c_str());
+		 }
+
+
+
+
+//------------------------------------------------------------------------------
+//------- Type Rules
+
+Type:	_kg_ 		{}
+		|_gram_		{}
+		|_mg_		{}
+		
+		|_km_		{}
+		|_meter_ 	{}
+		|_cm_		{}
+		
+		|_km2_		{}
+		|_meter2_	{}
+		|_cm2_		{}
+		
+		|_km3_		{}
+		|_meter3_	{}
+		|_cm3_		{}
+;
+
+
+
+//------------------------------------------------------------------------------
+//------- EXP RULES
+
+Exp: 	_leftP_ Exp _rightP_ {
+			$$.val  = $2.val;
+			$$.type = $2.type;
+			$$.exp_type = $2.exp_type;
+		}
+		
+		|Exp _plus_ Exp		 {
+			if(typeMistmachPlusMinus($1.type, $3.type)){
+				errorMismatch(yylineno, $1.type, $3.type);
+			}
+			
+			$$.type = $1.type;
+			if($1.exp_type == "variable" || $3.exp_type == "variable") {
+			
+				string newVariableName = freshTemp();
+				offsetStack.push(offsetStack.top());
+				offsetStack.top()+=1;
+				insert(symbolTableStack.top(), newVariableName, $$.type, offsetStack.top(), 0.0, false);
+				
+
+				char* lstring;
+				char* rstring;
+				char* lbuff = new char[100];
+				if($1.exp_type == "number") {
+					lstring = expToNumber($1.val, lbuff);
+				} else  {
+					lstring = expToLocation(findOffset($1.name), lbuff);
+				}
+				
+				
+				char* rbuff = new char[100];
+				if($3.exp_type == "number") {
+					 rstring = expToNumber(convert($1.type, $3.type, $3.val), rbuff);
+				} else  {
+					if($1.exp_type == "number") {
+						rstring = expToLocation(findOffset($3.name), rbuff);
+						if(findType($3.name) != $1.type && $1.type != _SCALAR_) {
+							//new var to store conversion
+							string newVariableName2 = freshTemp();
+							offsetStack.push(offsetStack.top());
+							offsetStack.top()+=1;
+							insert(symbolTableStack.top(), newVariableName2, $$.type, offsetStack.top(), 0.0, false);
+							
+							double proportion = convert($1.type, findType($3.name), 1);
+							
+							char* tempbuff = new char[100];
+							char* tempbuff2 = new char[100];
+							//emitAOP (findOffset(newVariableName2), $1.type, expToNumber($1.val, tempbuff),  '*', expToLocation(findOffset(proportion, tempbuff2));
+							emitAOP (findOffset(newVariableName2), $1.type, expToLocation(findOffset($3.name), tempbuff2) ,  '*',  expToNumber(proportion, tempbuff));
+							delete tempbuff;
+							delete tempbuff2;
+							rstring = expToLocation(findOffset(newVariableName2), rbuff);
+
+						}
+					} else  {
+						rstring = expToLocation(findOffset($3.name), rbuff);
+						if(findType($3.name) != findType($1.name)) {
+							//new var to store conversion
+							string newVariableName2 = freshTemp();
+							offsetStack.push(offsetStack.top());
+							offsetStack.top()+=1;
+							insert(symbolTableStack.top(), newVariableName2, $$.type, offsetStack.top(), 0.0, false);
+							
+							double proportion = convert(findType($1.name), findType($3.name), 1);
+							
+							char* tempbuff = new char[100];
+							char* tempbuff2 = new char[100];
+							emitAOP (findOffset(newVariableName2), findType($1.name), expToLocation(findOffset($1.name), tempbuff),  '*', expToNumber(proportion, tempbuff2));
+							rstring = expToLocation(findOffset(newVariableName2), rbuff);
+							delete tempbuff;
+							delete tempbuff2;
+
+						}
+					}
+					
+				}
+				emitAOP (findOffset(newVariableName), $$.type, lstring,  '+',  rstring);
+				
+				
+				$$.exp_type = "variable";
+				$$.name = newVariableName;
+				delete lbuff;
+				delete rbuff;
+			} else {
+				$$.val = $1.val + convert($1.type, $3.type, $3.val);
+				$$.exp_type = "number";
+			}
+
+		}
+		
+		
+		
+		
+		
+		|Exp _minus_ Exp	 {
+			if(typeMistmachPlusMinus($1.type, $3.type)) {
+				errorMismatch(yylineno, $1.type, $3.type);
+			}
+			$$.type = $1.type;
+			if($1.exp_type == "variable" || $3.exp_type == "variable") {
+				string newVariableName = freshTemp();
+				offsetStack.push(offsetStack.top());
+				offsetStack.top()+=1;
+				insert(symbolTableStack.top(), newVariableName, $$.type, offsetStack.top(), 0.0, false);
+				
+				char* lstring;
+				char* rstring;
+				char* lbuff = new char[100];
+				if($1.exp_type == "number") {
+					lstring = expToNumber($1.val, lbuff);
+				} else  {
+					lstring = expToLocation(findOffset($1.name), lbuff);
+				}
+				
+				
+				char* rbuff = new char[100];
+				if($3.exp_type == "number") {
+					 rstring = expToNumber(convert($1.type, $3.type, $3.val), rbuff);
+				} else  {
+					if($1.exp_type == "number") {
+						rstring = expToLocation(findOffset($3.name), rbuff);
+						if(findType($3.name) != $1.type && $1.type != _SCALAR_) {
+							//new var to store conversion
+							string newVariableName2 = freshTemp();
+							offsetStack.push(offsetStack.top());
+							offsetStack.top()+=1;
+							insert(symbolTableStack.top(), newVariableName2, $$.type, offsetStack.top(), 0.0, false);
+							
+							double proportion = convert($1.type, findType($3.name), 1);
+							
+							char* tempbuff = new char[100];
+							char* tempbuff2 = new char[100];
+							//emitAOP (findOffset(newVariableName2), $1.type, expToNumber($1.val, tempbuff),  '*', expToLocation(findOffset(proportion, tempbuff2));
+							emitAOP (findOffset(newVariableName2), $1.type, expToLocation(findOffset($3.name), tempbuff2) ,  '*',  expToNumber(proportion, tempbuff));
+							delete tempbuff;
+							delete tempbuff2;
+							rstring = expToLocation(findOffset(newVariableName2), rbuff);
+
+						}
+					} else  {
+						rstring = expToLocation(findOffset($3.name), rbuff);
+						if(findType($3.name) != findType($1.name)) {
+							//new var to store conversion
+							string newVariableName2 = freshTemp();
+							offsetStack.push(offsetStack.top());
+							offsetStack.top()+=1;
+							insert(symbolTableStack.top(), newVariableName2, $$.type, offsetStack.top(), 0.0, false);
+							
+							double proportion = convert(findType($1.name), findType($3.name), 1);
+							
+							char* tempbuff = new char[100];
+							char* tempbuff2 = new char[100];
+							emitAOP (findOffset(newVariableName2), findType($1.name), expToLocation(findOffset($1.name), tempbuff),  '*', expToNumber(proportion, tempbuff2));
+							rstring = expToLocation(findOffset(newVariableName2), rbuff);
+							delete tempbuff;
+							delete tempbuff2;
+
+						}
+					}
+					
+				}
+				
+				emitAOP (findOffset(newVariableName), $$.type, lstring,  '-',  rstring);
+				$$.exp_type = "variable";
+				$$.name = newVariableName;
+				delete lbuff;
+				delete rbuff;
+			} else {
+				$$.val = $1.val - convert($1.type,$3.type,$3.val);
+				$$.exp_type = "number";
+			}	
+		}
+		
+		
+		
+		|Exp _mult_ Exp		 {
+			if(typeMistmachMul($1.type, $3.type)){
+				errorMismatch(yylineno, $1.type, $3.type);
+			}
+			$$.type = calculateMulNewType($1.type, $3.type);
+			
+			if($1.exp_type == "variable" || $3.exp_type == "variable") {
+				string newVariableName = freshTemp();
+				offsetStack.push(offsetStack.top());
+				offsetStack.top()+=1;
+				insert(symbolTableStack.top(), newVariableName, $$.type, offsetStack.top(), 0.0, false);
+				
+				char* lstring;
+				char* rstring;
+				char* lbuff = new char[100];
+				if($1.exp_type == "number") {
+					lstring = expToNumber($1.val, lbuff);
+				} else  {
+					lstring = expToLocation(findOffset($1.name), lbuff);
+				}
+				
+				
+				char* rbuff = new char[100];
+				if($3.exp_type == "number") {
+					 rstring = expToNumber(convert($1.type, $3.type, $3.val), rbuff);
+				} else  {
+				
+					
+					if($1.exp_type == "number") {
+						rstring = expToLocation(findOffset($3.name), rbuff);
+						if(findType($3.name) != $1.type && $1.type != _SCALAR_) {
+							//new var to store conversion
+							
+							string newVariableName2 = freshTemp();
+							offsetStack.push(offsetStack.top());
+							offsetStack.top()+=1;
+							insert(symbolTableStack.top(), newVariableName2, $$.type, offsetStack.top(), 0.0, false);
+							
+							
+							double proportion = convert($1.type, findType($3.name), 1);
+							
+							char* tempbuff = new char[100];
+							char* tempbuff2 = new char[100];
+							//emitAOP (findOffset(newVariableName2), $1.type, expToNumber($1.val, tempbuff),  '*', expToLocation(findOffset(proportion, tempbuff2));
+							emitAOP (findOffset(newVariableName2), $1.type, expToLocation(findOffset($3.name), tempbuff2) ,  '*',  expToNumber(proportion, tempbuff));
+							delete tempbuff;
+							delete tempbuff2;
+							rstring = expToLocation(findOffset(newVariableName2), rbuff);
+
+						}
+					} else  {
+						rstring = expToLocation(findOffset($3.name), rbuff);
+						if(findType($3.name) != findType($1.name)) {
+							//new var to store conversion
+							string newVariableName2 = freshTemp();
+							offsetStack.push(offsetStack.top());
+							offsetStack.top()+=1;
+							insert(symbolTableStack.top(), newVariableName2, $$.type, offsetStack.top(), 0.0, false);
+							
+							double proportion = convert(findType($1.name), findType($3.name), 1);
+							
+							char* tempbuff = new char[100];
+							char* tempbuff2 = new char[100];
+							emitAOP (findOffset(newVariableName2), findType($1.name), expToLocation(findOffset($1.name), tempbuff),  '*', expToNumber(proportion, tempbuff2));
+							rstring = expToLocation(findOffset(newVariableName2), rbuff);
+							delete tempbuff;
+							delete tempbuff2;
+
+						}
+					}
+					
+				}
+				
+				
+				emitAOP (findOffset(newVariableName), $$.type, lstring,  '*',  rstring);
+				$$.exp_type = "variable";
+				delete lbuff;
+				delete rbuff;
+				$$.name = newVariableName;
+			} else {
+				$$.val = $1.val * convert($1.type,$3.type,$3.val);
+				$$.exp_type = "number";
+			}
+		}
+		
+		
+		
+		
+		|Exp _div_ Exp		 {
+			if(typeMistmachDiv($1.type, $3.type)){
+				errorMismatch(yylineno, $1.type, $3.type);
+			}
+			$$.type = calculateDivNewType($1.type, $3.type);
+			if($1.exp_type == "variable" || $3.exp_type == "variable") {
+			
+				string newVariableName = freshTemp();
+				offsetStack.push(offsetStack.top());
+				offsetStack.top()+=1;
+				insert(symbolTableStack.top(), newVariableName, $$.type, offsetStack.top(), 0.0, false);
+				
+				char* lstring;
+				char* rstring;
+				char* lbuff = new char[100];
+				if($1.exp_type == "number") {
+					lstring = expToNumber($1.val, lbuff);
+				} else  {
+					lstring = expToLocation(findOffset($1.name), lbuff);
+				}
+				
+				
+				char* rbuff = new char[100];
+				if($3.exp_type == "number") {
+					 rstring = expToNumber(convert($1.type, $3.type, $3.val), rbuff);
+				} else  {
+					if($1.exp_type == "number") {
+						rstring = expToLocation(findOffset($3.name), rbuff);
+						if(findType($3.name) != $1.type && $1.type != _SCALAR_) {
+							//new var to store conversion
+							string newVariableName2 = freshTemp();
+							offsetStack.push(offsetStack.top());
+							offsetStack.top()+=1;
+							insert(symbolTableStack.top(), newVariableName2, $$.type, offsetStack.top(), 0.0, false);
+							
+							double proportion = convert($1.type, findType($3.name), 1);
+							
+							char* tempbuff = new char[100];
+							char* tempbuff2 = new char[100];
+							//emitAOP (findOffset(newVariableName2), $1.type, expToNumber($1.val, tempbuff),  '*', expToLocation(findOffset(proportion, tempbuff2));
+							emitAOP (findOffset(newVariableName2), $1.type, expToLocation(findOffset($3.name), tempbuff2) ,  '*',  expToNumber(proportion, tempbuff));
+							delete tempbuff;
+							delete tempbuff2;
+							rstring = expToLocation(findOffset(newVariableName2), rbuff);
+
+						}
+					} else  {
+						rstring = expToLocation(findOffset($3.name), rbuff);
+						if(findType($3.name) != findType($1.name)) {
+							//new var to store conversion
+							string newVariableName2 = freshTemp();
+							offsetStack.push(offsetStack.top());
+							offsetStack.top()+=1;
+							insert(symbolTableStack.top(), newVariableName2, $$.type, offsetStack.top(), 0.0, false);
+							
+							double proportion = convert(findType($1.name), findType($3.name), 1);
+							
+							char* tempbuff = new char[100];
+							char* tempbuff2 = new char[100];
+							emitAOP (findOffset(newVariableName2), findType($1.name), expToLocation(findOffset($1.name), tempbuff),  '*', expToNumber(proportion, tempbuff2));
+							rstring = expToLocation(findOffset(newVariableName2), rbuff);
+							delete tempbuff;
+							delete tempbuff2;
+
+						}
+					}
+					
+				}
+				
+				
+				emitAOP (findOffset(newVariableName), $$.type, lstring,  '/',  rstring);
+				$$.exp_type = "variable";
+				
+				delete lbuff;
+				delete rbuff;
+				$$.name = newVariableName;
+			} else {
+				$$.val = $1.val / convert($1.type,$3.type,$3.val);
+				$$.exp_type = "number";
+			}
+		}
+		
+		
+		
+		
+		| w_id_ {	
+			if(!find($1.name))  {  
+				errorUndef (yylineno, $1.name.c_str());
+			}
+			if(isValidated($1.name)) {
+				$$.val = findValue($1.name);
+				$$.exp_type = "number";
+			} else {
+				$$.exp_type = "variable";
+			}
+			$$.type = findType($1.name);
+			$$.name = $1.name;	//to be used in IR
+
+		}
+		
+		
+		
+		|_number_			 {
+			$$.val  = $1.val;
+			$$.type = _SCALAR_;
+			$$.exp_type = "number";
+		}
+		
+		
+		
+		|_number_ Type		 {
+			$$.val = $1.val;
+			$$.type = $2.type;
+			$$.exp_type = "number";
+		}
+;
+
+w_id_: _id_ {
+	lvalue_var = $1.name;
+	$$.name = $1.name;
+}
+
+	
+//------- HW4 Rules
+M: {
+	$$.instruction = next_instruction;
+};
+
+N: {
+	$$.next_list.push_back(next_instruction);
+	emitGoTo();
+};
+
+Cond:
+	  _true_{
+		$$.true_list.push_back(next_instruction);
+		emitGoTo();
+	}
+	
+	| _false_{
+		$$.false_list.push_back(next_instruction);
+		emitGoTo();
+	}
+	
+	| _not_ Cond{
+		$$.true_list  = $2.false_list;
+		$$.false_list = $2.true_list;
+	}
+	
+	| Cond _or_ M Cond{
+		backpatch($1.false_list, $3.instruction);
+		$$.true_list = $4.true_list;
+		$$.true_list.merge($1.true_list);
+		$$.false_list = $4.false_list;
+	}
+	
+	| Cond _and_ M Cond{
+		backpatch($1.true_list, $3.instruction);
+		$$.true_list = $4.true_list;
+		$$.false_list = $1.false_list;
+		$$.false_list.merge($4.false_list);
+	}
+	
+	| Exp RelOp Exp{
+		if($1.type != _SCALAR_ && $3.type != _SCALAR_) {
+			if(typeMistmachPlusMinus($1.type, $3.type)){
+				errorMismatch(yylineno, $1.type, $3.type);
+			}
+		}
+		$$.true_list.push_back(next_instruction);
+		sprintf(tempbuff, "L%d:\tif s[%d] %s %s goto L", next_instruction, findOffset($1.name.c_str()), $2.name.c_str(), $3.name.c_str());
+		emit(tempbuff);
+		$$.false_list.push_back(next_instruction);
+		emitGoTo();
+	}
+	
+	| _leftP_  Cond  _rightP_{
+		$$.true_list  = $2.true_list;
+		$$.false_list = $2.false_list;
+	}
+;
+
+
+RelOp:  
+	  _greater_ {
+		$$.name = ">";
+	  }
+	
+	| _greater_equals_ {
+		$$.name = ">=";
+	}
+	
+	| _less_{
+		$$.name = "<";
+	}
+	
+	| _less_equals_{
+		$$.name = "<=";
+	}
+	
+	| _equals_{
+		$$.name = "==";
+	}
+	
+	| _not_equals_{
+		$$.name = "!=";
+	}
+;
+
+%%
+
+
+
+
+//------------------------------------------------------------------------------
+//------- MAIN
+
+int main()
+{
+    return yyparse();
+}
+
+
+
+//------------------------------------------------------------------------------
+//------- Error Handling
+
+int yyerror(const char * message) {errorSyn(yylineno, (char*)yylval.name.c_str()); exit(1);}
+
+void errorLex (int lineno, const char* wrongtext) 
+{
+    fprintf (stderr, "*** Lexical error at line %d: %s\n", lineno, wrongtext);
+	exit (-1);
+}
+
+
+void errorSyn (int lineno, const char* wrongtext) {
+	fprintf (stderr, "*** Syntax error at line %d: %s\n", lineno, wrongtext);
+	exit (-1);
+}
+
+
+void errorUndef (int lineno, const char* id) {
+	fprintf (stderr, "*** Undefined identifier %s at line %d.\n", id, lineno);
+	exit (-1);
+}
+
+
+void errorDef (int lineno, const char* id) {
+	fprintf (stderr, "*** Identifier %s redefinition at line %d.\n", id, lineno);
+	exit (-1);
+}
+
+
+void errorMismatch (int lineno, int type1, int type2) {
+    fprintf (stderr, "*** Types mismatch at line %d: %s and %s.\n", lineno, typeToString(type1), typeToString(type2));
+    exit (-1);
+}
+
+void errorUnexpectedBreak (int lineno) {
+	fprintf (stderr, "*** Unexpected break statement at line %d.\n", lineno);
+	exit (-1);
+}
+
+
+
+//------------------------------------------------------------------------------
+//------- Other...
+
+
+string freshTemp() {
+	static int i = 1;
+	char str[100];
+	sprintf(str, "%d", i);
+	string freshTemp = string("@t") + string(str);
+	i++;
+	return freshTemp;
+}
+
+
+
+void endScope (int depth) {
+    fprintf (stderr, "\n### Scope in depth %d just ended. The variables found are:\n", depth);
+}
+
+void printVar (const char* id, int type, int offset, bool isValidValue, double value) { 
+	if (! isValidValue) { 
+		fprintf (stderr, "###### offset %d:\t%s typed %s\n", offset, id, typeToString (type)); 
+	}
+	else { 
+		char buff[50]; 
+		fprintf (stderr, "###### offset %d:\t%s = %s %s\n", offset, id, expToNumber (value, buff), typeToString (type)); 
+	} 
+} 
+
+
+char* expToNumber (double value, char buff[]) { 
+	if (value == (int)value) { 
+	sprintf (buff, "%d", (int)value); 
+	} else { 
+	sprintf (buff, "%.30f", value); 
+	for (int i = strlen(buff)-1; i>0; i--) { 
+	if (buff[i] == '0') { 
+	buff[i] = 0; 
+	} else { 
+	break; 
+	} 
+	} 
+	int len = strlen(buff); 
+	if (buff[len-1] == '.') { 
+	buff[len-1] = 0; 
+	} 
+	} 
+	return buff; 
+}
+
+void emitAOP (int lvalueOffset, int lvalueType, const char* rvalue1,  char aop,  const char* rvalue2) {
+    sprintf (tempbuff, "L%d:\ts[%d] = %s %c %s; //%s\n",next_instruction, lvalueOffset, rvalue1, aop, rvalue2, typeToString (lvalueType));
+	emit(tempbuff);
+}
+void emitAssignment (int lvalueOffset, int lvalueType,  char* rvalue) {
+    sprintf (tempbuff, "L%d:\ts[%d] = %s; //%s\n",next_instruction, lvalueOffset, rvalue, typeToString (lvalueType));
+	emit(tempbuff);
+}
+void emitId (int idOffset, int idType) {
+    sprintf (tempbuff, "L%d:\tprint s[%d]; //%s\n",next_instruction, idOffset, typeToString (idType));
+	emit(tempbuff);
+}
+void emitString (char* str) {
+    sprintf (tempbuff, "L%d:\tprint %s;\n",next_instruction, str);
+	emit(tempbuff);
+}
+void emitConst (double val, int type) {
+    char numberBuff[50];
+    char str[100];
+   
+    sprintf (str, "%s; //%s", expToNumber (val, numberBuff), typeToString (type));
+    emitString (str);
+}
+
+void emitGoTo() {
+	sprintf(tempbuff, "L%d:\tgoto L", next_instruction);
+	emit(tempbuff);
+}
+
+const char* typeToString (int type) {
+    switch (type) {
+        case _kg_: return "kg";
+        case _mg_: return "mg";
+        case _gram_: return "gram";
+        case _km_: return "km";
+        case _cm_: return "cm";
+        case _meter_: return "meter";
+        case _km2_: return "km^2";
+        case _cm2_: return "cm^2";
+        case _meter2_: return "meter^2";
+        case _km3_: return "km^3";
+        case _cm3_: return "cm^3";
+        case _meter3_: return "meter^3";
+    }
+    return "untyped";
+}
+
+char* expToLocation (int offset, char buff[]) {
+    sprintf (buff, "s[%d]", offset);
+    return buff;
+}

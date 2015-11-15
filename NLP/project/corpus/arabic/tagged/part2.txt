@@ -1,0 +1,108 @@
+أخبرني كل شيئ
+VERB NOUN NOUN
+كل شيئ
+NOUN NOUN
+أنت متحمس جدًّا وفضوليّ بالنسبه لهوبيت
+PRONOUN ADJECTIVE HELPER_WORD ADJECTIVE HELPER_WORD NOUN
+بطريقه غير طبيعيه
+NOUN HELPER_WORD ADJECTIVE
+حسناً ماذا أقول لك
+HELPER_WORD HELPER_WORD VERB HELPER_WORD
+الحياة في العالم الواسع مستمره
+NOUN HELPER_WORD NOUN ADJECTIVE ADJECTIVE
+تماماً كما تفعل دائماً
+ADVERB HELPER_WORD VERB ADVERB
+مليئه بالمجيء والذهاب الخاصّ بها
+ADJECTIVE NOUN NOUN ADJECTIVE HELPER_WORD
+مدركه لوجود هوبيتس
+ADJECTIVE NOUN NOUN
+والذى أنا شاكر جداً له
+HELPER_WORD PRONOUN NOUN NOUN HELPER_WORD
+آه الحفل الذى طال إنتظاره
+HELPER_WORD NOUN PRONOUN VERB NOUN
+كيف المؤذي العجوز
+HELPER_WORD NOUN ADJECTIVE
+أسمع أنه سيكون حفل
+VERB HELPER_WORD VERB NOUN
+من الحفلات العظيمه
+UNKNOWN NOUN NOUN
+أنت تعرف بيلبو لديه المكان بالكامل في ضجّة
+PROUNOUN VERB NOUN HELPER_WORD NOUN HELPER_WORD HELPER_WORD NOUN
+لابد إن هذا يسعده
+HELPER_WORD HELPER_WORD HELPER_WORD VERB
+نصف الـشاير قد دُعِيَ
+NOUN NOUN HELPER_WORD VERB
+الطّيبة
+NOUN
+إنه يخطط لشىء ما
+HELPER_WORD VERB NOUN PRONOUN
+حسناً إحتفظ بأسرارك
+HELPER_WORD VERB NOUN
+قبل أن تجيء بمده طويله
+HELPER_WORD HELPER_WORD VERB NOUN ADJECTIVE
+كان باجينسيز فكرة جيّده للتفكير فيها
+VERB NOUN NOUN ADJECTIVE HELPER_WORD HELPER_WORD
+بالطّبع
+HELPER_WORD
+لم نفعل أى مغامره أوشىء غير متوقع
+HELPER_WORD VERB HELPER_WORD NOUN NOUN HELPER_WORD ADJECTIVE
+إذا كنت تشير إلى حادث التنين
+HELPER_WORD HELPER_WORD VERB HELPER_WORD NOUN NOUN
+فلقد تدخلت بالكاد
+HELPER_WORD VERB ADVERB
+كل ما فعلته أن أعطيت عمّك
+HELPER_WORD HELPER_WORD VERB HELPER_WORD VERB NOUN
+وخزة صغيرة خارج الباب
+NOUN ADJECTIVE HELPER_WORD NOUN
+مهما فعلت أنت قد عُلِّمْتَ رسميًّا كعلامه
+HELPER_WORD VERB PRONOUN HELPER_WORD VERB ADJECTIVE NOUN
+لتدمير السلام
+NOUN NOUN
+ألعاب ناريّة جاندالف
+NOUN ADJECTIVE NOUN
+الألعاب النّاريّة جاندالف
+NOUN ADJECTIVE NOUN
+جاندالف أنا سعيد لعودتك
+NOUN PRONOUN ADJECTIVE NOUN
+كذلك أنا يا ولدى العزيز
+HELPER_WORD PRONOUN HELPER_WORD NOUN NOUN
+كذلك أنا
+ADVERB PRONOUN
+لا شكرًا
+HELPER_WORD HELPER_WORD
+لا نريد بعد الآن أى زوّار
+HELPER_WORD VERB HELPER_WORD ADVERB HELPER_WORD NOUN
+أو مهنئين أو أقارب بعيدون
+HELPER_WORD NOUN HELPER_WORD NOUN ADJECTIVE
+وماذا عن الأصدقاء القدام جداً
+HELPER_WORD HELPER_WORD NOUN NOUN NOUN
+جاندالف
+NOUN
+بيلبو باجينز
+NOUN NOUN
+جاندالف العزيز
+NOUN NOUN
+سعيد لرؤيتك
+NOUN NOUN
+عمرك الآن مائة وأحد عشر سنة
+NOUN ADVERB NOUN HELPER_WORD NOUN NOUN
+هل يمكن أن تصدّق ذلك
+HELPER_WORD HELPER_WORD HELPER_WORD VERB HELPER_WORD
+لم تكبر يوماً واحداً
+HELPER_WORD VERB NOUN ADJECTIVE
+هيا إدخل
+HELPER_WORD NOUN
+أهلاً أهلاً
+ADJECTIVE ADJECTIVE
+شاي أو ربّما شيئ أقوى قليلاً
+NOUN HELPER_WORD ADVERB NOUN NOUN ADJECTIVE
+لدى زجاجات قليلة من العنب المعتق
+HELPER_WORD NOUN ADJECTIVE HELPER_WORD NOUN NOUN
+القديم 1296 سنوات جيّدة جدًّا
+ADJECTIVE UNKNOWN NOUN ADJECTIVE NOUN
+تقريبًا بمثل عمرى
+UNKNOWN UNKNOWN NOUN
+لقد وضعت بواسطة أبى
+HELPER_WORD VERB HELPER_WORD NOUN
+ما رأيك أن نفتح واحده هيه
+UNKNOWN UNKNOWN UNKNOWN VERB NOUN UNKNOWN

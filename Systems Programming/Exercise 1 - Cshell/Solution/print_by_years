@@ -1,0 +1,14 @@
+#! /usr/local/bin/tcsh -f
+
+#<initialization>
+set file_name = $1
+#</initialzation>
+
+set years = `cat $file_name | ./rm_spaces | cut -d" " -f3 | sort -n -u` #get all different years into a list $years
+
+foreach year ($years)
+	cat $file_name | ./rm_spaces | ./new_grep 3 $year| sort +1 -d | ./year_details $year	
+end
+
+
+

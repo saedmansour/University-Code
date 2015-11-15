@@ -1,0 +1,43 @@
+#! /usr/local/bin/tcsh -f
+
+#<paramters>
+# $1 is the numebr of lines without movies that have no rators
+#</paramters>
+
+
+set line = ($<)
+set n_lines = $1
+set counter = 0
+@ median1 = 0
+@ median2 = 0
+@ median = 0
+
+#while(${#line} != 0 && $line[2] == 0)
+#	set line = ($<)
+#	@ counter++ 
+#end
+#@ n_lines -= $counter 
+
+#<set info="median_index">
+@ mod = $n_lines % 2
+if($mod == 0) then
+	@ median1 = $n_lines / 2
+	@ median2 = ($n_lines / 2 + 1)
+else
+ 	@ median1 = $n_lines / 2 + 1
+endif
+#</set>
+
+
+@ counter = 1
+#set line = ($<)
+while(${#line} != 0)
+	if( $counter == $median1 ) @ median += $line[1] 
+	if( $counter == $median2 ) @ median += $line[1]
+	@ counter++
+	set line = ($<)
+end
+if($mod == 0)  @ median /= 2
+
+
+echo "$median"

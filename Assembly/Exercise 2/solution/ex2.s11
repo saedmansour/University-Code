@@ -1,0 +1,225 @@
+. = torg + 500
+		
+main:					; ---- <registeres usage> ----
+						;note: this is the common usage
+						;if usage changed, there's a comment on it.
+	clr r0				;r0 row number (i)
+	clr r1	 			;r1 column number (j)
+	clr r2				;  
+	clr r3				;r3 = &a[i][j]
+	clr r4				;r4 = number of alive neighbours
+	clr r5				;r5 = state of a[i][j] in next generation
+						;r6, r7 never used as a data container
+						; ---- </registeres usage> ----	
+	
+	
+;--Switch input and output matrices----------------------------------- 				
+; There's a need to switch input and output, because the output
+; in one time would be the input for the other time. The switch
+; is done depending on a counter, that counts what is the current
+; generation number is. At the end of the program. Output matrix
+; is copied to Fin_B matrix.
+
+	inc counter				;counter = current generation number
+	mov counter, r2			;so counter's contents wouldn't change
+	asr r2					;carry now contains the parity bit, 
+							;if carry = 1, it is odd, else even
+	bcs odd					;branch if carry = 1 to odd
+	mov #Init_B, output		;the matrix that we would input from 
+							;is Init_B, output would be Fin_B
+	mov #Fin_B, input
+	br loop					;to avoid the odd section					
+odd:
+	mov #Init_B, input
+	mov #Fin_B, output
+;---------------------------------------------------------------------
+
+
+
+;--The main part of the progrram--------------------------------------
+
+;loop: A jump to loop causes the next cell in the matrix to be handled	
+loop:						
+	clr r4					;r4 = 0, to count neighbours for every cell
+
+;----calculate a[i][j], result in r2. to decide if dead or alive------
+
+	mov r0, r3				;r3 = i: r3 would eventually contain: &input[i][j]
+	mul #12., r3			;r3 = i*12: Mul puts result in one register if register index is odd (r3, 3 odd)
+							;16 bits are enough since: max(r3) almost equals 5000(oct) + 12*12(dec) = 
+							;101010010000 (binary), which is 12 bits of length => not over 16 bits.
+	add r1, r3				;r3 = i*12 + j
+	mov r3, offset			;so would be later used to calculute i*12 + j + output
+	add input, r3   		;r3 = i*12 + j + input: Address now in r3
+	movb @r3, is_alive		;is_alive = input[i][j]
+;---------------------------------------------------------------------
+
+
+
+;--calculate how many neighbours are alive----------------------------
+;	There are 8 neighbours:
+;		&[i][j]	+ 12	&[i][j] + 12 + 1
+;		&[i][j]	- 12	&[i][j] - 12 - 1
+;		&[i][j]	+ 1		&[i][j] + 12 - 1
+;		&[i][j]	- 1		&[i][j] - 12 + 1
+;
+;r2 is used here to contain input[i][j] that is 0/1
+;A skip is done everytime a cell has no neighbour in the case that is
+;calculated.
+;r3 would cotain the address of every neighbour
+		
+		clr r5		
+		cmp r0, #11.		;if last line in matrix skip this. Case: +12
+		beq skip1		
+		movb 12.(r3), r2	;r2 used as a mid register
+							;;case &a[i][j]+12	
+		add r2, r4			;add to counter
+		
+skip1:	
+		cmp r0, #0.
+		beq skip2			;if first line in matrix skip this. Case: -12
+		movb -12.(r3), r2
+		add r2, r4
+		
+skip2:
+		cmp r1, #0
+		beq skip3			;if first column skip.
+		movb -1.(r3), r2	;case &a[i][j]-1	
+		add r2, r4
+		
+skip3:	
+		cmp r1, #11.
+		beq skip4			
+		movb 1.(r3), r2		;case &a[i][j]+1
+		add r2, r4
+		
+skip4:			
+					;case +n+1			
+		mov input, r5		
+		add #130., r5		;130 = offset to input[10][10] in matrix	
+		cmp r3, r5			;r5 = &input[10][10]
+		bgt skip5
+		movb 13.(r3), r2	;case &a[i][j]+12+1
+		add r2, r4		
+		
+skip5:
+		add #2., r5			;case +n-1, so last place to check with is +2 than the one in case +n+1
+		cmp r3, r5			;r5 = &Init_B[11][0]
+		bgt skip6
+		movb 11.(r3), r2	;case &a[i][j]+12-1
+		add r2, r4	
+		
+skip6:
+							
+		clr r5
+		add input, r5		;last cell that is right from starting ones is &input + 13
+		add #13., r5
+		cmp r3, r5			;r5 = &Init_B[1][1]
+		blt skip7
+		movb -13.(r3), r2	;case &a[i][j]-12-1
+		add r2, r4		
+skip7:
+		sub #2., r5			;case -n+1
+		cmp r3, r5			;r5 = &Init_B[0][11]
+		blt skip8
+		movb -11.(r3), r2	;case &a[i][j]-12+1
+		add r2, r4
+		
+skip8:		
+;---------------------------------------------------------------------
+
+
+
+
+;--If cell is alive---------------------------------------------------
+	cmp is_alive, #0		;branch if cell is dead	
+	beq dead				
+	cmp r4, #2.				
+	bge two					;branch if cell has two or more alive neighbours
+	clr r5					;kill cell (less than two neighbours => lonliness => death)
+	br set_val				;set the cell next generation's value
+two:
+	cmp r4, #3.
+	bgt three				;branch if it has more than three alive neighbours
+	movb #1, r5				;keep cell alive (number of alive neighbours between 2 and 3) 
+	br set_val
+three:
+	clr r5					;kill cell (more than three neighbours => over density => death)	
+	br set_val				;branch to avoid the "If cell is dead" section	 
+;---------------------------------------------------------------------
+
+
+
+;--If cell is dead----------------------------------------------------
+dead:
+	cmp r4, #3.				
+	bne die					;stay_dead
+	movb #1, r5				;if it has three alive neighbours it comes
+							;back to life
+	br set_val
+die:
+	clr r5
+;---------------------------------------------------------------------
+
+
+
+;--Set Value In Matrix-----------------------------------------------	
+;<regiestrs_used>
+;	r5 result
+;	r2 destination address
+set_val:
+	mov offset, r2		
+	add output, r2			;r2 = &output[i][j]
+	movb r5, @r2			;r5 contains dead/alive, r6 contains the address
+;---------------------------------------------------------------------
+
+
+
+;--increment next index of matrix and jump if not finsihed to loop----
+
+	inc r1				;j++
+	cmp r1, #12.		;if(columns_num < 12)
+	beq nx_l			;next_line
+	jmp loop			;handle next cell
+nx_l:	
+	clr r1				;j = 0	(first column in row)
+	inc r0				;i++ (next row)	
+	cmp r0, #12.		;while(j < 12)
+	beq	con 			;calculate next cell
+	jmp loop			;handle next cell
+con:
+	dec Gens
+	beq new_gen			;do next generation
+	jmp main
+new_gen:
+	asr counter
+	bcc cpy_arr			;if counter is even, then Init_B has the output and we should copy it to Fin_B
+end:
+	halt				
+;---------------------------------------------------------------------
+
+
+;--Copy Init_B to Fin_B if Gens is even-------------------------------
+.even
+cpy_arr:
+	mov #144., r0			;r0 now contains how many cells there are
+	mov #Fin_B, r6
+	mov #Init_B, r5
+cpy_next:
+	movb @r5, @r6			;copy cell	
+	inc r5					;next cell in Fin_B
+	inc r6					;next cell in Init_b
+	dec r0
+	bne cpy_next			;while 144 cells haven't been copied
+	halt
+;---------------------------------------------------------------------
+
+
+;--Variables---------
+.even
+is_alive: 		.word 0 
+offset: 		.word 0
+input: 			.word 0
+output: 		.word 0
+counter: 		.word 0
+;--------------------

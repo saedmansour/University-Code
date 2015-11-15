@@ -1,0 +1,47 @@
+#! /usr/local/bin/tcsh -f
+
+#<paramters>
+set file_name = $1
+set genre_list = $2
+#</paramters>
+
+#<initilzation>
+@ i = 1
+@ lines_num = 0
+@ median_val = 0
+set genre = ""
+set genre_list_cnf = ""
+set gn = ""
+@ lines = 0
+#</initilzation>
+
+switch($genre_list)
+        case "all":
+		set lines_num = `cat $file_name | ./rm_spaces | sort -n +4 | ./new_grep_r 5 0 | wc -l`
+		set median_val = `cat $file_name | ./rm_spaces | ./new_grep_r 5 0 | cut -d" " -f4 | sort -n | ./median $lines_num`
+		cat $file_name | ./rm_spaces | ./per_genre all $median_val
+                breaksw
+        case "per-genre":
+                cat $file_name | ./rm_spaces | cut -d" " -f6 | sort -u -d | ./call_genre $file_name
+                breaksw
+        default:
+		#<error_check type="if genre doesn't exist in the file">
+		#set tmp_list = "${genre_list}:"
+		set genre_list_cnf = `./create_list $genre_list`
+		set gll = `./create_list $genre_list`
+		foreach gn($genre_list_cnf)
+        		@ lines = `cat $file_name | ./new_grep 6 $gn | wc -l`
+			if($lines == 0) then
+                        	echo "Error: non-valid genre parameters"
+                        	goto end_pr_gn
+                	endif
+		end
+		#</error_check>
+		foreach genre($gll)
+                	set lines_num = `cat $file_name | ./rm_spaces | ./new_grep 6 $genre | sort -n +4 | ./new_grep_r 5 0 | wc -l`
+                	set median_val = `cat $file_name | ./rm_spaces | ./new_grep 6 $genre | sort -n +4 | ./new_grep_r 5 0 | cut -d" " -f4 | ./median $lines_num`
+			cat $file_name | ./new_grep 6 $genre | ./per_genre $genre $median_val
+		end
+endsw
+
+end_pr_gn:

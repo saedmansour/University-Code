@@ -1,0 +1,13 @@
+----------------------------------------------------------
+Functions:
+
+	moviedatabase.h:
+		get_movie(mdb, name, year)
+		get_reviewer(mdb, name)
+		is_valid_year()	
+		is_valid_user_type()
+		is_review_exist()
+		
+		
+	
+	

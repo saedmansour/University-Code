@@ -1,0 +1,108 @@
+﻿ספר לי הכל
+VERBB UNKNOWN HELPER_WORD
+הכל
+HELPER_WORD
+אתה הרבה יותר מדי נלהב וסקרן להוביט
+PRONOUN UNKNOWN ADVERB ADVERB ADJECTIVE ADJECTIVE NOUN
+ראשית ובאופן טבעי
+NOUN NOUN ADJECTIVE
+ובכן מה אוכל לספר לך
+ADVERB UNKNOWN UKNOWN VERB HELPER_WORD
+החיים בעולם החיצון מתקדמים באופן דומה
+NOUN NOUN UNKNOWN HELPER_WORD NOUN HELPER_WORD
+מאד לכפי שעשו בעידן החולף
+ADVERB UN VERB NOUN ADJECTIVE
+מלאי אירועים משלהם בקושי
+UN NOUN HELPER_WORD ADVERB
+מודעים לקיומם של ההוביטים
+ADJECTIVE NOUN UNKNOWN UNKNOWN
+ועל כך אני מודה
+UN ADVERB NOUN VERB
+אה המסיבה לה חיכינו כה רבות
+HELPER_WORD NOUN HELPER_WORD VERB ADVERB NOUN
+מה שלומו של השובב הזקן
+UNKNOWN NOUN UNKNOWN ADJECTIVE VERB
+שמעתי שזאת הולכת להיות מסיבה
+VERB PRONOUN UN UNKNOWN NOUN
+רבת הוד והדר
+UN UN UN
+אתה מכיר את בילבו כל המקום במהומה
+PRONOUN VERB HELPER_WORD NOUN HELPER_WORD NOUN NOUN
+ובכן זה בטח יסב לו נחת
+ADVERB PRONOUN ADVERB VERB HELPER_WORD NOUN
+מחצית השייר הוזמנה
+NOUN NOUN VERB
+מענין
+NOUN
+הוא זומם משהו
+PRONOUN VERB NOUN
+בסדר אל תחלוק את סודותיך
+ADVERB HELPER_WORD VERB HELPER_WORD NOUN
+לפני שאתה הגעת למשפחת באגינס
+HELPER_WORD NOUN VERB NOUN UNKNOWN
+היה שם טוב מאד
+UNKNOWN NOUN HELPER_WORD ADVERB
+באמת
+UN
+מעולם לא יצאנו להרפתקאות או עשינו דבר בלתי צפוי
+ADVERB UNKNOWN VERB NOUN HELPER_WORD VERB NOUN HELPER_WORD HELPER_WORD
+אם אתה מתייחס לתקרית עם הדרקון
+NOUN PRONOUN VERB NOUN HELPER_WORD UNKNOWN
+אני כמעט ולא הייתי מעורב
+NOUN ADVERB UNKNOWN UNKNOWN ADJECTIVE
+כל שעשיתי היה לתת לדודך
+HELPER_WORD VERB UNKNOWN UN NOUN
+דחיפה קלה אל מחוץ לדלת
+NOUN UN HELPER_WORD HELPER_WORD ADJECTIVE
+ללא קשר למעשיך אתה תוייגת רשמית
+HELPER_WORD NOUN NOUN PRONOUN VERB ADVERB
+כמפר שלווה
+HELPER_WORD NOUN
+גאנדלף זיקוקין
+NOUN NOUN
+גאנדלף זיקוקין
+NOUN NOUN
+גאנדלף אני שמח שחזרת
+NOUN NOUN ADJECTIVE VERB
+גם אני בחורי היקר
+ADVERB UN NOUN NOUN
+גם אני
+ADVERB NOUN
+לא תודה
+UNKNOWN NOUN
+אין לנו צורך במבקרים נוספים
+UNKNOWN UN NOUN NOUN HELPER_WORD
+דורשי שלומי או קרובים רחוקים
+NOUN UNKNOWN HELPER_WORD ADJECTIVE ADJECTIVE
+ומה עם חברים ישנים מאד
+UNKNOWN HELPER_WORD NOUN ADJECTIVE ADVERB
+גאנדלף
+UNKNOWN
+בילבו באגינס
+UNKNOWN UNKNOWN
+גאנדלף יקירי
+UNKNOWN NOUN
+טוב לראותך
+HELPER_WORD UN
+בן מאה ואחת עשרה שנים
+HELPER_WORD NUMBER NUMBER NUMBER NOUN
+אתה מסוגל להאמין
+PRONOUN ADJECTIVE VERB
+לא הזדקנת ביום
+UNKNOWN VERB NOUN
+בוא פנימה היכנס
+VERB ADVERB VERB
+ברוך הבא ברוך הבא
+UN UN UN UN
+תה או אולי משקה מעט חזק יותר
+NOUN HELPER_WORD ADVERB NOUN UN UN ADVERB
+נותרו לי מעט בקבוקים מבציר הכרם הישן
+VERB UNKNOWN NOUN NOUN UNKNOWN NOUN ADJECTIVE
+1926 שנה טובה מאד
+NUMBER UN UNKNOWN ADVERB
+זקן כמעט כמותי
+NOUN UN NOUN
+הוא נשתל בידי אבי
+PRONOUN VERB HELPER_WORD NOUN
+שנפתח אחד
+VERB NUMBER

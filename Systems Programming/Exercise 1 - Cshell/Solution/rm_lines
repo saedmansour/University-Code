@@ -1,0 +1,11 @@
+#! /usr/local/bin/tcsh -f
+
+set list_without_nl = ""
+
+set line = ($<)
+while(${#line} != 0)
+	set list_without_nl = "$list_without_nl $line"
+	set line = ($<) 
+end
+
+echo $list_without_nl

@@ -1,0 +1,512 @@
+;---Registers usage------------------------
+; r5 is used a link register when using inline otherwise pc is used
+; in main:
+;	r1 = counter of how many times program has been done
+;	r0 = result of functions mostly
+;---------------------------------------------------
+
+. = torg + 1000
+
+main:
+	mov pc, sp						;initialize stack
+	tst -(sp) 						;initialize stack continued
+	mov Gens, r1
+	
+	mov #input_array, -(sp)			;push &input_array[], first parameter; output of function
+	jsr r5, rle2st					;transfer Init_B given in "local" to "standard" in a new array of size 144. input_array.
+	.word Init_B					;second parameter inline; input of function.
+	tst (sp)+						;adjust sp
+	tst r0							;r0 is a return value of rle2st; r0 = 1  <=>  array is error free
+	bne valid_input_array
+	movb #0., Output				;if not valid Init_B
+	halt
+valid_input_array:
+	mov #End_B, -(sp)				;push &End_B[], first parameter of function. Usage: input
+	jsr pc, validate_End_B			
+	tst (sp)+						;adjust sp
+	tst r0							;output of validate_End_B in r0, if r0 = 1 <=> End_B is valid							
+	bne valid_End_B
+	movb #1., Output				;if not valid End_B
+	halt
+valid_End_B:
+	mov #End_B, r0					;first paramter to c_sorted in register = &End_B[]
+	jsr pc, c_sorted				;check if End_B is sorted 
+	tst r0							;return value of c_sorted in r0, r0 = 1 <=> c_sorted 
+	bne sorted_End_B
+	movb #3., Output				;if not sorted
+	halt
+sorted_End_B:
+	clr r2							;r2 is used to check if counter is odd or even
+loop:
+
+
+
+;--Switch input and output matrices----------------------------------- 				
+; There's a need to switch input and output, because the output
+; in one time would be the input for the other time. The switch
+; is done depending on a counter, that counts what is the current
+; generation number is.
+
+
+
+	inc counter						;counter = current generation number, it is initialized to zero at execution's start
+	mov counter, r2					;so counter's contents wouldn't change
+	asr r2							;carry now contains the parity bit, 
+									;if carry = 1, it is odd, else it is even
+	bcs is_odd						;branch if carry = 1 to odd
+	mov #input_array, arr_out		;the matrix that we would input from 
+									;is Init_B, output would be Fin_B
+	mov #output_array, arr_in
+	br is_even						;to avoid the odd section					
+is_odd:
+	mov #input_array, arr_in
+	mov #output_array, arr_out
+is_even:
+;---------------------------------------------------------------------
+	
+	
+	mov arr_in, -(sp)				;push first parameter to next_gen = &input_array[]
+	mov arr_out, -(sp)				;push second parameter to next_gen = &output_array[]
+	jsr pc, next_gen
+	cmp (sp)+, (sp)+				;adjust sp
+	sob r1, loop					;r1 is initialized to Gens => thus loop is repeated "Gens" times
+
+	
+	asr counter
+	bcs skip_cpy_arr				;if counter is even, then Init_B has the output and we should copy it to Fin_B	
+	
+;--Copy input_array to output_array if Gens is even-------------------------------
+cpy_arr:
+	mov #144., r0					;r0 now contains how many cells there are
+	mov #output_array, r6			; to be copied to
+	mov #input_array, r5			;to be copied from
+cpy_next:
+	movb @r5, @r6					;copy cell	
+	inc r5							;next cell 
+	inc r6							;next cell 
+	dec r0
+	bne cpy_next					;while 144 cells haven't been copied
+;---------------------------------------------------------------------
+	
+skip_cpy_arr:
+									;we've got the final result in output_array and here we make final output of the game in "local"  way
+	mov #output_array, -(sp)		;first parameter to function st2loc = &output_array[]
+	mov #our_End_B, -(sp)			;second parameter to function st2loc = &our_End_B[]
+	jsr pc, st2loc
+	cmp (sp)+, (sp)+				;adjust sp
+	
+	
+									;now check if expected output given from the automatic checker, is the same as the one in our final input
+	mov #End_B, -(sp)				;first parameter to function is_arrays_same = &End_B[]
+	mov #our_End_B, -(sp)			;second parameter to function is_arrays_same = &our_End_B[]
+	jsr pc, is_arrays_same
+	cmp (sp)+, (sp)+				;adjust sp
+	tst r0							;output of is_arrays_same function in r0 - r0 = 1 <=> arrays are the same
+	bne arrays_same
+	movb #7., Output				;arrays are not same
+	halt
+arrays_same:
+	movb #15., Output
+	halt
+	
+	
+	
+	
+;----Functions-------------------------------------------------------------------------------------------------------------------
+
+
+;---------------------------------
+;parameter1 by stack - &input_array
+;parameter2 inline &Init_B:
+rle2st:	
+	mov r1, -(sp)
+	mov r2, -(sp) 				;sum
+	mov r3, -(sp)				;0/1 value to insert, if zero insert zeros, if 1 insert ones
+	mov r4, -(sp)				;the value of the current cell (shetat retsafem)
+	mov (r5)+, r0				;Init_B - read
+	mov  10.(sp), r1			;input_array - write
+	clr r2						;initialize sum to 0	
+	clr r3						;start writing zeros
+	
+	cmpb (r0), #0.				;if first value in array of retsafem is zero, then start putting ones in output array
+	bne loop_r
+	mov #1., r3					;r3 = value to insert = one here
+	inc r0						;how many ones to insert
+loop_r:							;loop_r would operate untill all writing to array is finished
+	cmpb (r0), #0.				;if there's a zero not in the start of the array, array is invalid
+	beq invalid_Init_B
+	movb (r0)+, r4				;r4 = block size to write to
+	add r4, r2
+	cmp r2, #144.
+	bgt invalid_Init_B			;if there is no sum of 144 then array is invalid
+wr_loop:						;wr_loop job is to write one block of retsafem to output
+	movb r3, (r1)+				
+	sob r4, wr_loop				;ends when writes a block
+	cmp r3, #0.					
+	beq set_one					;exchange the block value to set
+	clr r3						;write a block of zeros
+	br skip_set	
+set_one:
+	mov #1., r3					;write a block of ones
+skip_set:
+	cmp r2, #144.				;while there's no value that the sum till now isn't 144
+	bne loop_r
+	mov #1., r0					;output that it is valid
+	br skip_r
+invalid_Init_B:
+	clr r0
+skip_r:							;restore registers
+	mov (sp)+, r4
+	mov (sp)+, r3
+	mov (sp)+, r2
+	mov (sp)+, r1
+	rts r5
+;---------------------------------
+
+	
+;---------------------------------	
+validate_End_B:
+	mov r3, -(sp)					;r3 is uses => store it
+	mov 4(sp), r3					;4(sp) = &End_B[]
+nxt_cell:	
+	cmpb (r3)+, #12.		
+	blo nxt_cell					;if  0 <= (r3)  <=11 branch, this is true since we treat it as unsigned and then negative numbers become bigger than 12
+	cmpb -(r3), #-1. 				;check if end of array
+	bne not_valid					;if not -1 and is out of matrix, then it is out of matrix => End_B is not valid
+	inc r3							;to check the next cell
+	cmpb (r3), #-1.					
+	bne not_valid					;if -1, -1 don't appear in sequence
+	mov #1., r0						;else successful, end function
+	br skip2 
+not_valid:
+	clr r0
+skip2:
+	mov (sp)+, r3					;return r3 to it's previous value before function
+	rts pc
+;---------------------------------
+
+
+;---------------------------------
+;paramter r0 = endb	
+c_sorted:
+	cmpb (r0), #-1.					;branch to sorted if array is empty
+	beq sorted
+loop1:	
+	cmpb 2(r0), #-1.				;if we are in the last [i,j] in the matrix, branch to sorted
+	beq sorted
+	cmpb (r0), 2(r0)				
+	bgt not_sorted					;if line number of first cell bigger than line number of second cell => not sorted
+	beq same_line					;bgt does not affect flags, if equal branch to same line
+	tst (r0)+						;increase r0 in 2 bytes which continas the next i(line number of next cell)
+	br loop1						;keep branching, it would always end since -1,-1 always appears in end of array
+same_line:
+	inc r0							;r0 now contains j(column number)
+	cmpb (r0), 2(r0)				
+	bge not_sorted					;if column number of first cell greater or equal than ssecond cell => not sorted
+	inc r0							;r0 now contains i(line number of next cell to be checked)
+	br loop1
+not_sorted:
+	clr r0							;return r0  = 0
+	br skip3_c
+sorted:
+	mov #1, r0						;return r0 = 1
+skip3_c:
+	rts pc
+;---------------------------------
+
+	
+;---------------------------------	
+;1 parameter in stack: our_End_B
+;2 parameter in stack: End_B
+is_arrays_same:
+	mov r3, -(sp)					;r3 is used => push
+	mov r4, -(sp)					;r4 is used => push
+	mov 6(sp), r3					;r3 = our_End_B
+	mov 8(sp), r4					;r4 = End_B
+	
+compare_next_cell:
+	cmpb (r3), (r4)
+	bne not_same
+	cmpb (r3), #-1.					;if array end and they are all equal => return true
+	beq is_same	
+	inc r3							;&our_End_B[] ++
+	inc r4							;&End_B[] ++
+	br compare_next_cell
+not_same:
+	clr r0							;return false
+	br skip1
+is_same:
+	mov #1., r0						;return true
+skip1:
+	mov (sp)+, r4					;return r4 to it's previous value before function
+	mov (sp)+, r3					;same r3
+	rts pc
+;---------------------------------
+	
+	
+;---------------------------------	
+;parameter 1 = output array
+;paramater 2 = our_end_b	
+;this function transforms from standard way to local way
+st2loc:
+	mov r0, -(sp)					;r0 is used => push
+	mov r1, -(sp)					;r1 is used => push
+	mov r2, -(sp)					;r2 is used => push
+	mov r3, -(sp)					;r3 is used => push
+	mov 12.(sp), r0					;r0 = &output array[]
+	mov 10.(sp), r1 				;r1 = &our_end_b[]
+	clr r2							;line number = i initialize to 0
+	clr r3							;column number = j initialize to 0
+	
+loop2:
+	cmpb (r0), #1.					;if is not alive branch
+	bne skip3
+	movb r2, (r1)+					;store i
+	movb r3, (r1)+					;store j
+skip3:
+	inc r0							;next element in array
+	inc r3							;increment column number
+	cmp r3, #12.					;if gone over 12 columns initialize columns number to zero
+	bne skip4
+	cmp r2, #11.
+	beq break_loop					;if 12th line and gone over 12 cells, break loop
+	clr r3							;go to next line by inc r2, and first element in line (clr r3)					
+	inc r2		
+skip4:
+	br loop2
+
+break_loop:
+	movb #-1., (r1)+				;add (-1,-1) to end of array
+	movb #-1., (r1)					
+
+	
+	mov (sp)+, r3					;return r3 to it's previous value before function
+	mov (sp)+, r2					;same r2
+	mov (sp)+, r1					;same r1
+	mov (sp)+, r0					;same r0
+	rts pc
+;---------------------------------	
+	
+	
+;---------------------------------	
+;mov #input_array, -(sp)
+;mov #output_array, -(sp)
+;Stack image:
+;
+;9r5
+;8r4
+;7r3
+;6r2
+;5r1
+;4r0
+;3pc
+;2output_array
+;1input_array
+
+next_gen:
+	mov r0, -(sp)				;store register values to restore at end	
+	mov r1, -(sp)	
+	mov r2, -(sp)	
+	mov r3, -(sp)
+	mov r4, -(sp)
+	mov r5, -(sp)
+	mov 16.(sp), input			;input_array
+	mov 14.(sp), output			;output_array
+
+	
+							; ---- <registeres usage> ----
+							;note: this is the common usage
+							;if usage changed, there's a comment on it.
+	clr r0					;r0 row number (i)
+	clr r1	 				;r1 column number (j)
+	clr r2					;  
+	clr r3					;r3 = &a[i][j]
+	clr r4					;r4 = number of alive neighbours
+	clr r5					;r5 = state of a[i][j] in next generation
+							; ---- </registeres usage> ----	
+	
+
+;--The main part of the progrram--------------------------------------
+
+;loop_gen: A jump to loop_gen causes the next cell in the matrix to be handled	
+loop_gen:						
+	clr r4					;r4 = 0, to count neighbours for every cell
+
+;----calculate a[i][j], result in r2. to decide if dead or alive------
+
+	mov r0, r3				;r3 = i: r3 would eventually contain: &input[i][j]
+	mul #12., r3			;r3 = i*12: Mul puts result in one register if register index is odd (r3, 3 odd)
+							;16 bits are enough since: max(r3) almost equals 5000(oct) + 12*12(dec) = 
+							;101010010000 (binary), which is 12 bits of length => not over 16 bits.
+	add r1, r3				;r3 = i*12 + j
+	mov r3, offset			;so would be later used to calculute i*12 + j + output
+	add input, r3   		;r3 = i*12 + j + input: Address now in r3
+	movb @r3, is_alive		;is_alive = input[i][j]
+;---------------------------------------------------------------------
+
+
+
+;--calculate how many neighbours are alive----------------------------
+;	There are 8 neighbours:
+;		&[i][j]	+ 12	&[i][j] + 12 + 1
+;		&[i][j]	- 12	&[i][j] - 12 - 1
+;		&[i][j]	+ 1		&[i][j] + 12 - 1
+;		&[i][j]	- 1		&[i][j] - 12 + 1
+;
+;r2 is used here to contain input[i][j] that is 0/1
+;A skip is done everytime a cell has no neighbour in the case that is
+;calculated.
+;r3 would cotain the address of every neighbour
+		
+		clr r5		
+		cmp r0, #11.		;if last line in matrix skip this. Case: +12
+		beq skip1_f		
+		movb 12.(r3), r2	;r2 used as a mid register
+							;case &a[i][j]+12	
+		add r2, r4			;add to counter
+		
+skip1_f:	
+		cmp r0, #0.
+		beq skip2_f			;if first line in matrix skip this. Case: -12
+		movb -12.(r3), r2
+		add r2, r4
+		
+skip2_f:
+		cmp r1, #0
+		beq skip3_f			;if first column skip.
+		movb -1.(r3), r2	;case &a[i][j]-1	
+		add r2, r4
+		
+skip3_f:	
+		cmp r1, #11.
+		beq skip4_f			
+		movb 1.(r3), r2		;case &a[i][j]+1
+		add r2, r4
+		
+skip4_f:			
+							;case +n+1			
+		mov input, r5		
+		add #130., r5		;130 = offset to input[10][10] in matrix	
+		cmp r3, r5			;r5 = &input[10][10]
+		bgt skip5_f
+		movb 13.(r3), r2	;case &a[i][j]+12+1
+		add r2, r4		
+		
+skip5_f:
+		add #2., r5			;case +n-1, so last place to check with is +2 than the one in case +n+1
+		cmp r3, r5			;r5 = &Init_B[11][0]
+		bgt skip6_f
+		movb 11.(r3), r2	;case &a[i][j]+12-1
+		add r2, r4	
+		
+skip6_f:
+							
+		clr r5
+		add input, r5		;last cell that is right from starting ones is &input + 13
+		add #13., r5
+		cmp r3, r5			;r5 = &Init_B[1][1]
+		blt skip7_f
+		movb -13.(r3), r2	;case &a[i][j]-12-1
+		add r2, r4		
+skip7_f:
+		sub #2., r5			;case -n+1
+		cmp r3, r5			;r5 = &Init_B[0][11]
+		blt skip8_f
+		movb -11.(r3), r2	;case &a[i][j]-12+1
+		add r2, r4
+		
+skip8_f:		
+;---------------------------------------------------------------------
+
+
+
+
+;--If cell is alive---------------------------------------------------
+	cmp is_alive, #0		;branch if cell is dead	
+	beq dead				
+	cmp r4, #2.				
+	bge two					;branch if cell has two or more alive neighbours
+	clr r5					;kill cell (less than two neighbours => lonliness => death)
+	br set_val				;set the cell next generation's value
+two:
+	cmp r4, #3.
+	bgt three				;branch if it has more than three alive neighbours
+	movb #1, r5				;keep cell alive (number of alive neighbours between 2 and 3) 
+	br set_val
+three:
+	clr r5					;kill cell (more than three neighbours => over density => death)	
+	br set_val				;branch to avoid the "If cell is dead" section	 
+;---------------------------------------------------------------------
+
+
+
+;--If cell is dead----------------------------------------------------
+dead:
+	cmp r4, #3.				
+	bne die					;stay_dead
+	movb #1, r5				;if it has three alive neighbours it comes
+							;back to life
+	br set_val
+die:
+	clr r5
+;---------------------------------------------------------------------
+
+
+
+;--Set Value In Matrix-----------------------------------------------	
+;<regiestrs_used>
+;	r5 result
+;	r2 destination address
+set_val:
+	mov offset, r2		
+	add output, r2			;r2 = &output[i][j]
+	movb r5, @r2			;r5 contains dead/alive, r6 contains the address
+;---------------------------------------------------------------------
+
+
+
+;--increment next index of matrix and jump if not finsihed to loop_gen----
+
+	inc r1					;j++
+	cmp r1, #12.			;if(columns_num < 12)
+	beq nx_l				;next_line
+	jmp loop_gen			;handle next cell
+nx_l:	
+	clr r1					;j = 0	(first column in row)
+	inc r0					;i++ (next row)	
+	cmp r0, #12.			;while(j < 12)
+	beq	end 			
+	jmp loop_gen			;handle next cell
+end:
+
+	mov (sp)+, r5			;restore registers
+	mov (sp)+, r4
+	mov (sp)+, r3
+	mov (sp)+, r2
+	mov (sp)+, r1
+	mov (sp)+, r0
+	rts pc
+;---------------------------------
+
+;--------------------------------------------------------------------------------------------------------------------------------
+
+
+;----Variables---------------------------------------------------------------------------------------------------------------
+Output:			.byte 0.			;Has the A/B/C/D flags
+.even
+input_array:  	.blkw 72.
+output_array: 	.blkw 72.
+counter: 		.word 0
+our_End_B: 		.blkw 145
+;---------------------------------------------------------------------------------------------------------------------------------
+
+
+;--Variables for next_gen - taken from exercise 2---------
+.even
+arr_in:			.word 0
+arr_out:		.word 0
+is_alive: 		.word 0 
+offset: 		.word 0
+input: 			.word 0
+output: 		.word 0			;this got nothing to do with Output variable
+;-----------------------------------------------------------------------

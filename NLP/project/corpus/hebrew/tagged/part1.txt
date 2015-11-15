@@ -1,0 +1,200 @@
+﻿ העולם השתהנ
+UNKNOWN noun VERB 
+אני חשה זאת במים
+UNKNOWN verb UNKNOWN noun 
+אני חשה זאת באדמה
+UNKNOWN verb UNKNOWN noun 
+אני מריחה זאת באוויר
+UNKNOWN verb UNKNOWN noun 
+הרבה משהיה אבד
+noun UNKNOWN verb 
+מי שיזכור
+UNKNOWN verb 
+זה החל בחישול הטבעות הגדולות
+UNKNOWN UNKNOWN verb noun UNKNOWN 
+שלוש ניתנו לאלפים
+noun verb UNKNOWN 
+בני אלמוות חכמים ונאים מכל חי
+noun UNKNOWN UNKNOWN UNKNOWN UNKNOWN UNKNOWN 
+שבע למלכי הגמדים
+noun UNKNOWN UNKNOWN 
+הכורים והמחשלים הגדולים
+noun UNKNOWN UNKNOWN 
+של היכלי ההרים
+UNKNOWN noun UNKNOWN 
+ותשע
+noun 
+תשע טבעות ניתנו
+noun UNKNOWN UNKNOWN 
+לגזע האדם
+noun UNKNOWN 
+שמעבר לכל חושק בכוח
+UNKNOWN UNKNOWN verb UNKNOWN 
+בטבעות היה כבול
+noun UNKNOWN verb 
+הכוח לשלוט בכל גזע
+noun noun UNKNOWN UNKNOWN 
+אך הם כולם רומו
+UNKNOWN UNKNOWN noun verb 
+היות וטבעת נוספת חושלה
+UNKNOWN noun UNKNOWN verb 
+בארץ מורדור
+noun UNKNOWN 
+בלהבות ההר אבדון
+noun UNKNOWN UNKNOWN 
+אדון האופל סאורון
+noun UNKNOWN UNKNOWN 
+חישל בסתר טבעת ראשית
+verb UNKNOWN noun UNKNOWN 
+לשלוט בכולן
+verb noun 
+ולטבעת זו מזג את רשעותו ואכזריותו
+noun UNKNOWN verb UNKNOWN UNKNOWN UNKNOWN 
+ורצונו לשלוט בכל שחי
+noun verb UNKNOWN UNKNOWN 
+טבעת אחת לשלוט בשאר
+noun UNKNOWN verb UNKNOWN 
+אחת אחת
+noun UNKNOWN 
+המדינות החופשיות של הארץ התיכונה
+noun UNKNOWN UNKNOWN UNKNOWN UNKNOWN 
+נפלו בפני כוחה של הטבעת
+verb UNKNOWN noun UNKNOWN UNKNOWN 
+אך היו כמה
+UNKNOWN UNKNOWN UNKNOWN 
+אשר התנגדו
+UNKNOWN verb 
+ברית אחרונה של בני אדם ואלפים
+noun UNKNOWN UNKNOWN UNKNOWN UNKNOWN UNKNOWN 
+צעדה כנגד צבאות מורדור
+verb UNKNOWN noun UNKNOWN 
+ועל מדרונותיו של ההר אבדון
+UNKNOWN noun UNKNOWN UNKNOWN UNKNOWN 
+הם לחמו על חרותה של הארץ התיכונה
+UNKNOWN verb UNKNOWN noun UNKNOWN UNKNOWN UNKNOWN 
+ניצחון היה בהישג יד
+noun UNKNOWN UNKNOWN UNKNOWN 
+אך כוחה של הטבעת
+UNKNOWN noun UNKNOWN UNKNOWN 
+לא יכל להישמד
+UNKNOWN verb UNKNOWN 
+היה זה ברגע זה
+UNKNOWN UNKNOWN UNKNOWN UNKNOWN 
+כאשר כל התקווה נמוגה
+UNKNOWN UNKNOWN noun verb 
+שאיסילדור בן המלך
+noun UNKNOWN UNKNOWN 
+הרים את חרב אביו
+verb UNKNOWN noun UNKNOWN 
+סאורון ויבם של העמים החופשיים של הארץ התיכונה
+noun UNKNOWN UNKNOWN UNKNOWN UNKNOWN UNKNOWN UNKNOWN UNKNOWN 
+נוצח
+verb 
+והטבעת עברה לאיסילדור
+noun verb UNKNOWN 
+אשר יכול היה לחסל
+UNKNOWN verb UNKNOWN UNKNOWN 
+את הרשע לנצח
+UNKNOWN noun UNKNOWN 
+אך לב האדם
+UNKNOWN noun UNKNOWN 
+מושחת בקלות
+noun UNKNOWN 
+ולטבעת הכוח
+noun UNKNOWN 
+רצון משלה
+noun UNKNOWN 
+היא בגדה באיסילדור
+UNKNOWN verb noun 
+והביאה למותו
+verb noun 
+וכמה אירועים שאמורים היו להיזכר
+UNKNOWN noun UNKNOWN UNKNOWN verb 
+אבדו
+verb
+היסטוריה היתה לאגדה
+noun verb UNKNOWN 
+אגדה היתה למיתוס
+noun verb UNKNOWN 
+ובמשך 2 500 שנים
+UNKNOWN UNKNOWN UNKNOWN noun 
+נשכחה הטבעת כליל
+verb noun UNKNOWN 
+עד
+UNKNOWN 
+שאודות למזל
+UNKNOWN noun 
+היא לכדה עונד חדש
+UNKNOWN verb noun UNKNOWN 
+היקרה לי
+noun UNKNOWN 
+הטבעת עברה ליצור גולום
+noun verb UNKNOWN UNKNOWN 
+אשר לקחה למעמקי המנהרות
+UNKNOWN verb noun UNKNOWN 
+של הרי הערפל
+UNKNOWN noun UNKNOWN 
+ושם היא ניזונה ממנו
+UNKNOWN UNKNOWN verb UNKNOWN 
+היא באה אלי שלי
+UNKNOWN verb UNKNOWN UNKNOWN 
+אהבתי רכושי שלי היקרה לי
+noun UNKNOWN UNKNOWN UNKNOWN UNKNOWN 
+הטבעת העניקה לגולום
+noun UNKNOWN UNKNOWN 
+חיים ארוכים באופן לא טבעי
+noun UNKNOWN UNKNOWN UNKNOWN UNKNOWN 
+במשך 500 שנים
+UNKNOWN UNKNOWN noun 
+היא הרעילה את מוחו
+UNKNOWN verb UNKNOWN noun 
+ובחשכת מערותיו של גולום היא חיכתה
+noun UNKNOWN UNKNOWN UNKNOWN UNKNOWN verb 
+החשכה הזדחלה בחזרה ליערות העולם
+noun verb UNKNOWN UNKNOWN UNKNOWN 
+שמועה נפוצה על הצל במזרח
+noun verb UNKNOWN UNKNOWN UNKNOWN 
+לחישות אודות פחד חסר שם
+noun UNKNOWN UNKNOWN UNKNOWN UNKNOWN 
+וטבעת הכוח חשה
+noun UNKNOWN verb 
+כי זמנה הוא כעת
+UNKNOWN noun UNKNOWN UNKNOWN 
+היא נטשה את גולום
+UNKNOWN verb UNKNOWN noun 
+אך אז קרה דבר
+UNKNOWN UNKNOWN verb noun 
+אשר הטבעת לא תיכננה
+UNKNOWN noun UNKNOWN verb 
+היא נאספה בידי היצור הבלתי סביר ביותר
+UNKNOWN verb UNKNOWN noun UNKNOWN UNKNOWN UNKNOWN 
+הוביט בילבו באגינס
+noun UNKNOWN UNKNOWN 
+מהשייר
+noun 
+אבדה
+verb 
+היקרה לי אבדה
+noun UNKNOWN UNKNOWN 
+בקרוב תבוא העת
+UNKNOWN UNKNOWN noun 
+בה ההוביטים יעצבו את גורל כולנו
+UNKNOWN noun verb UNKNOWN UNKNOWN UNKNOWN 
+אתה מאחר
+UNKNOWN adjective 
+קוסם לעולם אינו מאחר
+noun UNKNOWN UNKNOWN adjective 
+פרודו באגינס
+noun UNKNOWN 
+הוא גם אינו מקדים קוסם מגיע בדיוק
+UNKNOWN UNKNOWN UNKNOWN adjective noun verb UNKNOWN 
+בשעה בה התכוון להגיע
+noun UNKNOWN verb UNKNOWN 
+נפלא לראות אותך גאנדלף
+noun verb UNKNOWN UNKNOWN 
+לא חשבת שאחמיץ את יום
+UNKNOWN verb UNKNOWN UNKNOWN noun 
+הולדתו של דודך בילבו
+noun UNKNOWN UNKNOWN UNKNOWN 
+אילו חדשות מהחוץ הבאת
+UNKNOWN noun UNKNOWN UNKNOWN 
